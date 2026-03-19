@@ -597,6 +597,7 @@ function setGuideMode(m) {
     document.getElementById('generic-note').style.display = 'block';
   } else {
     urlPersonalised = true;
+    if (p.get('type') === 'baguette') initialGuideMode = 'baguette';
     const v = {};
     keys.forEach(k => { if (has(k)) v[k] = p.get(k); });
 
@@ -646,8 +647,8 @@ function updateNav() {
 window.addEventListener('scroll', updateNav, { passive:true });
 
 // ── INIT ──────────────────────────────────────────────────────────────────
-applyDefaults('loaf');
-setGuideMode('loaf');
+applyDefaults(initialGuideMode);
+setGuideMode(initialGuideMode);
 
 // ── PRINT ─────────────────────────────────────────────────────────────────
 function printGuide() {

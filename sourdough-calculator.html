@@ -264,6 +264,12 @@ input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   <div class="panel f3" id="p-simple-in">
     <div class="ptitle">Settings</div>
 
+    <div style="margin-bottom:6px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--grey)">Bread Type</div>
+    <div style="display:flex;gap:0;margin-bottom:20px">
+      <button class="mode-btn active" id="btn-type-loaf"     onclick="setBreadType('loaf')"     style="padding:8px 22px;font-size:11px">Loaf</button>
+      <button class="mode-btn"        id="btn-type-baguette" onclick="setBreadType('baguette')" style="padding:8px 22px;font-size:11px">Baguette</button>
+    </div>
+
     <div style="margin-bottom:6px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--grey)">Fermentation Speed</div>
     <div class="step-slider-wrap">
       <div class="step-slider-labels">
@@ -283,13 +289,13 @@ input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div class="step-desc" id="step-desc">Balanced flavour and timing</div>
     </div>
 
-    <div class="ptitle-sm">Standard Loaf Size</div>
+    <div class="ptitle-sm" id="lbl-default-size">Standard Loaf Size</div>
     <div class="field" style="margin-bottom:20px">
-      <label>Default weight per loaf (g)</label>
+      <label id="lbl-default-weight">Default weight per loaf (g)</label>
       <input type="number" id="s-default-weight" value="950" min="100" max="9999"
         oninput="applyDefaultWeight()" style="max-width:180px">
     </div>
-    <div class="ptitle-sm">Bowls</div>
+    <div class="ptitle-sm" id="lbl-bowls-title">Bowls</div>
     <div id="bowl-cards"></div>
     <button class="btn-add-bowl" onclick="addBowl()">+ Add another bowl</button>
   </div>
@@ -344,6 +350,7 @@ input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 // ── STATE ─────────────────────────────────────────────────────────────────
 let mode    = 'simple';
 let stepVal = 1; // default = Balanced (15%)
+let breadType = 'loaf';
 
 const STEP_PCT  = [0.20, 0.15, 0.10];
 const STEP_DESC = [
@@ -390,10 +397,34 @@ function setStep(n) {
   calc();
 }
 
+// ── BREAD TYPE ─────────────────────────────────────────────────────────────────
+function setBreadType(t) {
+  breadType = t;
+  document.getElementById('btn-type-loaf').classList.toggle('active',     t === 'loaf');
+  document.getElementById('btn-type-baguette').classList.toggle('active', t === 'baguette');
+  const isBag = t === 'baguette';
+  const newDef = isBag ? 400 : 950;
+  document.getElementById('lbl-default-size').textContent   = isBag ? 'Standard Baguette Size' : 'Standard Loaf Size';
+  document.getElementById('lbl-default-weight').textContent = isBag ? 'Default weight per baguette (g)' : 'Default weight per loaf (g)';
+  document.getElementById('lbl-bowls-title').textContent    = isBag ? 'Batches' : 'Bowls';
+  const addBtn = document.querySelector('#p-simple-in .btn-add-bowl');
+  if (addBtn) addBtn.textContent = isBag ? '+ Add another batch' : '+ Add another bowl';
+  const dwEl = document.getElementById('s-default-weight');
+  if (dwEl && (parseFloat(dwEl.value) === 950 || parseFloat(dwEl.value) === 400)) dwEl.value = newDef;
+  bowls.forEach(b => {
+    const el = document.getElementById('bowl-weight-' + b.id);
+    if (el && el.dataset.def === '1') el.value = newDef;
+  });
+  saveBowlState();
+  renderBowls();
+  calc();
+}
+
 // ── BOWLS ─────────────────────────────────────────────────────────────────
 function getDefaultWeight() {
   const el = document.getElementById('s-default-weight');
-  return el ? (parseFloat(el.value) || 950) : 950;
+  const fallback = breadType === 'baguette' ? 400 : 950;
+  return el ? (parseFloat(el.value) || fallback) : fallback;
 }
 function applyDefaultWeight() {
   const dw = getDefaultWeight();
@@ -447,7 +478,7 @@ function renderBowls() {
         ${bowls.length > 1 ? `<button class="btn-rm-bowl" onclick="removeBowl(${b.id})">Remove</button>` : ''}
       </div>
       <div class="frow">
-        <div class="field"><label>Number of loaves</label>
+        <div class="field"><label>${breadType==='baguette'?'Number of baguettes':'Number of loaves'}</label>
           <input type="number" id="bowl-loaves-${b.id}" value="${loavesVal}" min="1" max="99" oninput="calc()"></div>
         <div class="field"><label>Weight per loaf (g)</label>
           <input type="number" id="bowl-weight-${b.id}" value="${weightVal}" min="100" max="9999" data-def="${wtDef}" oninput="this.dataset.def='0';calc()"></div>
@@ -455,7 +486,7 @@ function renderBowls() {
       <label class="tog-wrap">
         <input type="checkbox" id="bowl-onebowl-${b.id}" onchange="calc()" ${oneBowlChk ? 'checked' : ''}>
         <span class="pip"></span>
-        <span class="tog-label">Mix in one bowl</span>
+        <span class="tog-label">${breadType==='baguette'?'Mix in one batch':'Mix in one bowl'}</span>
       </label>
       <div class="ptitle-sm" style="margin-top:4px">Mix-ins <span style="font-size:11px;font-weight:400;color:var(--grey);font-family:'DM Mono',monospace">(% of flour · optional)</span></div>
       <div id="bowl-mixins-${b.id}"></div>
@@ -621,7 +652,8 @@ function calcSimple() {
   rc.appendChild(buildTable(bdata, levainPct, hyd, salt, null));
 
   const badge=document.createElement('div');
-  badge.innerHTML=`<span class="rbadge">${Math.round(hyd*100)}% hydration · ${(salt*100).toFixed(1)}% salt · ${Math.round(levainPct*100)}% levain</span>`;
+  const bTypeLabel = breadType === 'baguette' ? 'baguette' : 'loaf';
+  badge.innerHTML=`<span class="rbadge">${Math.round(hyd*100)}% hydration · ${(salt*100).toFixed(1)}% salt · ${Math.round(levainPct*100)}% levain · ${bTypeLabel}</span>`;
   rc.appendChild(badge);
 }
 
@@ -772,12 +804,16 @@ function buildTable(bdata, levainPct, hyd, salt, blend) {
   h += '<thead><tr>';
   h += '<th class="th-lbl">Ingredient</th>';
   bdata.forEach(b => {
+    const isBag = breadType === 'baguette';
+    const unit  = isBag ? (b.loaves>1?'baguettes':'baguette') : (b.loaves>1?'loaves':'loaf');
+    const mixLabel = isBag ? 'one batch' : 'one bowl';
+    const perLabel = isBag ? 'per baguette' : 'per loaf';
     const sub = b.name
       ? (b.oneBowl
-          ? `${b.loaves} ${b.loaves>1?'loaves':'loaf'} · one bowl`
-          : `${b.loaves} ${b.loaves>1?'loaves':'loaf'} · per loaf`)
+          ? `${b.loaves} ${unit} · ${mixLabel}`
+          : `${b.loaves} ${unit} · ${perLabel}`)
       : (b.oneBowl
-          ? `${b.loaves} ${b.loaves>1?'loaves':'loaf'} · one bowl`
+          ? `${b.loaves} ${unit} · ${mixLabel}`
           : `×${b.loaves} for full bake`);
     const levainNote = (b.levainPct !== undefined && Math.round(b.levainPct*100) !== Math.round(levainPct*100))
       ? ` · ${Math.round(b.levainPct*100)}% levain` : '';
@@ -880,9 +916,10 @@ function buildTable(bdata, levainPct, hyd, salt, blend) {
     const colSpan = bdata.length + 1 + (multi?1:0);
     noteBowls.forEach(b => {
       const pieceWt = fmt(b.result.totalDough / b.loaves, false);
+      const pieceName = breadType === 'baguette' ? 'baguette' : 'piece';
       const note = b.name
-        ? `${esc(b.name)}: divide into ${b.loaves} pieces of approx. ${pieceWt} g each after bulk fermentation.`
-        : `Divide into ${b.loaves} pieces of approx. ${pieceWt} g each after bulk fermentation.`;
+        ? `${esc(b.name)}: divide into ${b.loaves} ${pieceName}${b.loaves>1?'s':''} of approx. ${pieceWt} g each after bulk fermentation.`
+        : `Divide into ${b.loaves} ${pieceName}${b.loaves>1?'s':''} of approx. ${pieceWt} g each after bulk fermentation.`;
       h += `<tr class="note-row"><td colspan="${colSpan}">${note}</td></tr>`;
     });
   }
@@ -945,7 +982,8 @@ function updateGuideLink() {
     }
     const params = new URLSearchParams({
       levain, water, salt, flour, totalFlour, hyd_pct,
-      loaves, lwt, onebowl, bowl, mixins
+      loaves, lwt, onebowl, bowl, mixins,
+      type: breadType
     });
     link.href = 'guide.html?' + params.toString();
   } catch(e) {
