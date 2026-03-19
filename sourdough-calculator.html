@@ -550,6 +550,7 @@ function syncLbl(lbl,inputId,suffix,decimals) {
 // ── CALCULATION ───────────────────────────────────────────────────────────
 function calc() {
   if (mode==='simple') calcSimple(); else calcAdv();
+  updateGuideLink();
 }
 
 // ── COMPUTE one bowl ──────────────────────────────────────────────────────
@@ -951,10 +952,6 @@ function updateGuideLink() {
     link.href = 'guide.html';
   }
 }
-// Also update on every calc so hovering always shows current values
-const _origCalc = calc;
-function calc() { _origCalc(); updateGuideLink(); }
-
 init();
 </script>
 </body>
