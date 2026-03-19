@@ -308,7 +308,7 @@ body {
       </ul>
       <div class="callout tip">
         <div class="callout-title">Nice to have</div>
-        <p>In order of importance: a dough whisk, bowl scraper, banneton (loaves) or couche (baguettes), and a dutch oven. I also have accurate digital tea scales (0.01 g accuracy) for salt. All can be bought on Amazon for well under $100 in total.</p>
+        <p>In order of importance: a dough whisk, bowl scraper, banneton and dutch oven (loaves) or couche (baguettes). I also have accurate digital tea scales (0.01 g accuracy) for measuring salt precisely. All can be bought on Amazon for well under $100 in total.</p>
       </div>
     </section>
 
@@ -325,7 +325,8 @@ body {
           <tr><td>Cooking salt</td><td class="qty"><span data-qty="salt">11</span> g</td><td class="note"></td></tr>
           <tr><td>Levain</td><td class="qty"><span data-qty="levain">83</span> g</td><td class="note">Made from starter — see Step 1</td></tr>
           <tr><td>Olives, toasted walnuts, or other mix-ins</td><td class="qty">As desired</td><td class="note">Optional — ~15% of total flour</td></tr>
-          <tr><td>Rice flour or coarse semolina</td><td class="qty">As needed</td><td class="note">For dusting</td></tr>
+          <tr class="baguette-only"><td>Bakers couche (proofing cloth)</td><td class="qty">—</td><td class="note">Replaces banneton for baguettes</td></tr>
+          <tr><td>Rice flour or coarse semolina</td><td class="qty">As needed</td><td class="note">For dusting banneton/couche</td></tr>
         </tbody>
       </table>
     </section>
@@ -358,9 +359,10 @@ body {
       <div class="section-num">Step 1 · ~24 hours before baking</div>
       <h2>The pre-ferment</h2>
       <p>Combine 20 g sourdough starter with 40 g flour and 40 g water in your levain jar. Mix well, cover loosely, and leave at room temperature. This produces roughly <span data-qty="levain">83</span> g of levain by mixing time.</p>
-      <p>After mixing the levain, feed your starter with equal parts flour and water. 20 g each gives you 60 g of starter — enough for several weeks in the fridge.</p>
+      <p>After mixing the levain, feed your starter by mixing 20 g each of flour and water back into the remaining starter in the jar. This gives you more than you took out, even allowing for wastage.</p>
       <h3 id="starter-care">Starter care</h3>
-      <p>Keep starter in a clean glass jar in the fridge. Whenever you bake, replace what you use with equal parts flour and water. Feed weekly if baking less than once a week. For absences over two weeks, make a stiff dry levain (twice as much flour as water) — keeps for months.</p>
+      <p>Keep starter in a clean glass jar in the fridge. Whenever you bake, replace what you use by mixing equal parts flour and water back into the jar. Feed weekly if baking less than once a week — discard a tablespoon and mix in 20 g each of flour and water.</p>
+      <p>For absences over two weeks, make a stiff dry levain (twice as much flour as water), freeze it. To revive, leave at room temperature until thawed then feed with equal parts flour and water. It should be active within 24 hours.</p>
     </section>
 
     <section class="section" id="step2" data-mode="both">
@@ -434,7 +436,7 @@ body {
       </ol>
       <div class="callout tip">
         <div class="callout-title">Shaping tips</div>
-        <p>Use the benchtop's friction to build tension in the outer skin. Think <em>sticky side</em> (bottom of banneton) and <em>smooth side</em> (becomes the top of the loaf). You can also stitch the sticky side together in the banneton for extra tension.</p>
+        <p>Use the benchtop's friction to build tension in the outer skin. Think <em>sticky side</em> (bottom of dough contacting the benchtop) and <em>smooth side</em> (becomes the top of the loaf — this goes on the bottom in the banneton). You can also stitch the sticky side together in the banneton for extra tension.</p>
       </div>
     </section>
 
@@ -480,7 +482,7 @@ body {
       </ol>
       <div class="callout tip">
         <div class="callout-title">Shaping tips</div>
-        <p>Same principle as loaves — use friction to build tension. Baguettes are more forgiving in shape but less forgiving with over-proofing.</p>
+        <p>Use the benchtop's friction to build tension in the outer skin. Think <em>sticky side</em> (bottom of dough contacting the benchtop) and <em>smooth side</em> (becomes the top of the baguette — this goes on the bottom in the couche). Baguettes are more forgiving in shape but less forgiving with over-proofing.</p>
       </div>
     </section>
 
@@ -564,6 +566,11 @@ function setGuideMode(m) {
     el.classList.toggle('hidden', el.dataset.mode !== m);
   });
 
+  // Ingredient table baguette-only rows
+  document.querySelectorAll('.ing-table tr.baguette-only').forEach(el => {
+    el.classList.toggle('hidden', m !== 'baguette');
+  });
+
   // Sidebar nav sections
   document.querySelectorAll('.sidebar .nav-section[data-mode]').forEach(el => {
     const dm = el.dataset.mode;
@@ -616,7 +623,7 @@ function setGuideMode(m) {
     const intro   = document.getElementById('ing-intro');
     if (intro) {
       const batchNote = onebowl
-        ? `${loaves} loaf${loaves>1?'s':''} mixed in one bowl`
+        ? `${+loaves > 1 ? loaves + ' loaves' : '1 loaf'} mixed in one bowl`
         : `per loaf (multiply ×${loaves} for the full bake)`;
       intro.innerHTML = `Quantities for your recipe — <strong>${batchNote}${lwt ? ', '+lwt+' g target each' : ''}</strong>. Values in <span class="qty-live" style="border:none">rust</span> are personalised from your calculator.`;
     }
@@ -629,8 +636,8 @@ function setGuideMode(m) {
     if (v.flour)   parts.push(`<em>${v.flour} g</em> flour`);
     if (v.hyd_pct) parts.push(`<em>${v.hyd_pct}%</em> hydration`);
     const loafDesc = onebowl
-      ? `${loaves} loaf${loaves>1?'s':''} · one bowl`
-      : `${loaves} loaf${loaves>1?'s':''}`;
+      ? `${+loaves > 1 ? loaves + ' loaves' : '1 loaf'} · one bowl`
+      : `${+loaves > 1 ? loaves + ' loaves' : '1 loaf'}`;
     banner.innerHTML = `📐 Personalised — ${loafDesc}${v.bowl ? ' · '+v.bowl : ''}: &nbsp;${parts.join(' · ')}`;
     banner.style.display = 'block';
   }
