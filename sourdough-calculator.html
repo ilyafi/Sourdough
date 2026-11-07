@@ -196,6 +196,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var
 .out-table th.th-lbl{font:600 13px 'Inter',system-ui,sans-serif;color:var(--res-muted);text-align:left;padding-left:0;vertical-align:bottom}
 .out-table th .sub-hdr{display:block;font:400 13px 'Inter',system-ui,sans-serif;color:var(--res-muted);margin-top:2px}
 .out-table tr.divrow td{padding:0;height:6px;border:none}
+.out-table tr.note-row.warn td{color:var(--res-accent);font-weight:500}
 .out-table tr.note-row td{font-size:14px;color:var(--res-muted);padding:12px 4px 2px 0;border:none;line-height:1.5}
 </style>
 
@@ -337,6 +338,9 @@ let bowls  = [];
 let bowlId = 0;
 let mxId   = 0;
 const advMx = [];
+// Mix-in values keyed by mix-in id, so re-rendering never loses what was typed
+const mxVals = {};
+function mxSet(id, field, v) { (mxVals[id] = mxVals[id] || { name:'', pct:'15' })[field] = v; calc(); }
 
 // ── BOOT ──────────────────────────────────────────────────────────────────
 function init() {
@@ -426,8 +430,8 @@ function addBowl() {
   const id = ++bowlId;
   const bowl = { id, mixins: [], _loaves:'2', _weight:String(getDefaultWeight()), _wtDef:'1', _onebowl:true };
   // Bowl 2 (index 1) defaults to 15% walnuts; Bowl 3 (index 2) defaults to 15% olives
-  if (newIdx === 1) { const mid = ++mxId; bowl.mixins.push(mid); bowl._mxDefaults = { [mid]: { name:'walnuts', pct:15 } }; }
-  if (newIdx === 2) { const mid = ++mxId; bowl.mixins.push(mid); bowl._mxDefaults = { [mid]: { name:'olives',  pct:15 } }; }
+  if (newIdx === 1) { const mid = ++mxId; bowl.mixins.push(mid); mxVals[mid] = { name:'walnuts', pct:'15' }; }
+  if (newIdx === 2) { const mid = ++mxId; bowl.mixins.push(mid); mxVals[mid] = { name:'olives',  pct:'15' }; }
   bowls.push(bowl);
   renderBowls();
   calc();
@@ -460,7 +464,7 @@ function renderBowls() {
       <div class="frow">
         <div class="field"><label>${breadType==='baguette'?'Number of baguettes':'Number of loaves'}</label>
           <input type="number" id="bowl-loaves-${b.id}" value="${loavesVal}" min="1" max="99" oninput="calc()"></div>
-        <div class="field"><label>Weight per loaf (g)</label>
+        <div class="field"><label>${breadType==='baguette'?'Weight per baguette (g)':'Weight per loaf (g)'}</label>
           <input type="number" id="bowl-weight-${b.id}" value="${weightVal}" min="100" max="9999" data-def="${wtDef}" oninput="this.dataset.def='0';calc()"></div>
       </div>
       <label class="tog-wrap">
@@ -479,7 +483,8 @@ function renderBowls() {
 
 function addBowlMixin(bid) {
   const b = bowls.find(x => x.id===bid); if (!b) return;
-  b.mixins.push(++mxId);
+  const mid = ++mxId; mxVals[mid] = { name:'', pct:'15' };
+  b.mixins.push(mid);
   renderBowlMixins(bid, b.mixins);
   calc();
 }
@@ -491,32 +496,29 @@ function removeBowlMixin(bid, mid) {
 }
 function renderBowlMixins(bid, mxList) {
   const el = document.getElementById('bowl-mixins-'+bid); if (!el) return;
-  const b = bowls.find(x => x.id===bid);
   el.innerHTML = '';
   mxList.forEach(id => {
-    const def = b && b._mxDefaults && b._mxDefaults[id];
-    const defName = def ? def.name : '';
-    const defPct  = def ? def.pct  : 15;
+    const v = mxVals[id] || { name:'', pct:'15' };
     const d = document.createElement('div');
     d.className = 'mx-row';
     d.innerHTML = `
-      <input type="text"   id="bmx-n-${bid}-${id}" placeholder="e.g. walnuts" value="${defName}" oninput="calc()">
-      <div class="mx-pct"><input type="number" id="bmx-p-${bid}-${id}" value="${defPct}" min="0.1" max="200" step="0.5" oninput="calc()"></div>
+      <input type="text"   id="bmx-n-${bid}-${id}" placeholder="e.g. walnuts" value="${esc(v.name)}" oninput="mxSet(${id},'name',this.value)">
+      <div class="mx-pct"><input type="number" id="bmx-p-${bid}-${id}" value="${esc(String(v.pct))}" min="0" max="200" step="0.5" oninput="mxSet(${id},'pct',this.value)"></div>
       <button class="btn-rm" onclick="removeBowlMixin(${bid},${id})">×</button>
     `;
     el.appendChild(d);
   });
 }
-function getBowlMixins(bid, mxList) {
-  return mxList.map(id => ({
-    name: document.getElementById(`bmx-n-${bid}-${id}`)?.value.trim() || 'Mix-in',
-    pct:  parseFloat(document.getElementById(`bmx-p-${bid}-${id}`)?.value) || 0,
-  }));
+function mxRead(id) {
+  const v = mxVals[id] || {};
+  return { name: String(v.name || '').trim() || 'Mix-in', pct: parseFloat(v.pct) || 0 };
 }
+function getBowlMixins(bid, mxList) { return mxList.map(mxRead); }
 
 // ── ADV MIX-INS ───────────────────────────────────────────────────────────
 function addMixin() {
-  advMx.push(++mxId);
+  const mid = ++mxId; mxVals[mid] = { name:'', pct:'15' };
+  advMx.push(mid);
   renderAdvMixins();
   calc();
 }
@@ -527,21 +529,17 @@ function removeAdvMixin(id) {
 function renderAdvMixins() {
   const el = document.getElementById('a-mixins'); el.innerHTML='';
   advMx.forEach(id => {
+    const v = mxVals[id] || { name:'', pct:'15' };
     const d = document.createElement('div'); d.className='mx-row';
     d.innerHTML=`
-      <input type="text"   id="mx-n-${id}" placeholder="e.g. walnuts" oninput="calc()">
-      <div class="mx-pct"><input type="number" id="mx-p-${id}" value="15" min="0.1" max="200" step="0.5" oninput="calc()"></div>
+      <input type="text"   id="mx-n-${id}" placeholder="e.g. walnuts" value="${esc(v.name)}" oninput="mxSet(${id},'name',this.value)">
+      <div class="mx-pct"><input type="number" id="mx-p-${id}" value="${esc(String(v.pct))}" min="0" max="200" step="0.5" oninput="mxSet(${id},'pct',this.value)"></div>
       <button class="btn-rm" onclick="removeAdvMixin(${id})">×</button>
     `;
     el.appendChild(d);
   });
 }
-function getAdvMixins() {
-  return advMx.map(id => ({
-    name: document.getElementById(`mx-n-${id}`)?.value.trim() || 'Mix-in',
-    pct:  parseFloat(document.getElementById(`mx-p-${id}`)?.value) || 0,
-  }));
-}
+function getAdvMixins() { return advMx.map(mxRead); }
 
 // ── FLOUR BLEND ───────────────────────────────────────────────────────────
 function getBlend() {
@@ -581,37 +579,39 @@ function calc() {
 //   total dough  = T*(1 + hyd + saltPct + sum(mxPct))  [levain terms cancel]
 //
 // So: T = targetDough / (1 + hyd + saltPct + sum(mxPct))
-function computeBowl({loaves, lwt, oneBowl, hyd, salt, levainPct, mixins}) {
+function computeBowl({loaves, lwt, oneBowl, hyd, salt, levainPct, mixins, blend}) {
   const mxTotal = mixins.reduce((s,m)=>s+m.pct/100, 0);
   const div     = 1 + hyd + salt + mxTotal;   // levainPct cancels
   const mult    = oneBowl ? loaves : 1;
-  const T       = (lwt * mult) / div;          // total flour
+  const T       = (lwt * mult) / div;          // total flour (incl. levain flour)
 
-  const levain     = T * levainPct;
-  const addedWater = T * hyd - T * levainPct / 2;
-  const saltG      = T * salt;
-  const addedFlour = T * (1 - levainPct / 2);
-  const mxGrams    = mixins.map(m=>({ name:m.name, g: T * m.pct/100 }));
+  // Round up so there's never too little dough; salt to 0.1 g
+  const rLevain = Math.ceil(T * levainPct);
+  const rWater  = Math.ceil(T * hyd - T * levainPct / 2);
+  const rSalt   = Math.round(T * salt * 10) / 10;
+  const rFlour  = Math.ceil(T * (1 - levainPct / 2));
+  const rMixins = mixins.map(m=>({ name:m.name, g: Math.ceil(T * m.pct/100) }));
 
-  // Round: ceil for all except salt (1 dp)
-  const rLevain = Math.ceil(levain);
-  const rWater  = Math.ceil(addedWater);
-  const rSalt   = Math.round(saltG * 10) / 10;
-  const rFlour  = Math.ceil(addedFlour);
-  const rMixins = mxGrams.map(m=>({ name:m.name, g: Math.ceil(m.g) }));
+  // Flour blend: percentages are of TOTAL flour. Levain flour is assumed to be
+  // white, so whole wheat and rye come entirely from the added flour and white
+  // makes up the rest. Rows always sum exactly to the added flour.
+  let split = null;
+  if (blend) {
+    const ww  = Math.round(T * blend.ww  / 100);
+    const rye = Math.round(T * blend.rye / 100);
+    split = { white: rFlour - ww - rye, ww, rye };
+  }
 
-  const actualTotal = rLevain + rWater + rSalt + rFlour
-                    + rMixins.reduce((s,m)=>s+m.g, 0);
-
+  const total = rLevain + rWater + rSalt + rFlour + rMixins.reduce((s,m)=>s+m.g, 0);
   return {
     levain:     rLevain,
     water:      rWater,
     salt:       rSalt,
     flour:      rFlour,
-    addedFlour: rFlour,
     totalFlour: Math.ceil(T),
     mixins:     rMixins,
-    totalDough: actualTotal,
+    split,
+    totalDough: Math.round(total),
   };
 }
 
@@ -625,7 +625,7 @@ function calcSimple() {
   // Gather bowl data
   const bdata = bowls.map(b => {
     const loaves  = rInt('bowl-loaves-'+b.id,1);
-    const lwt     = rFlt('bowl-weight-'+b.id,850);
+    const lwt     = rFlt('bowl-weight-'+b.id,getDefaultWeight());
     const oneBowl = document.getElementById('bowl-onebowl-'+b.id)?.checked||false;
     const name    = document.getElementById('bowl-name-'+b.id)?.value.trim()||'Bowl '+b.id;
     const mixins  = getBowlMixins(b.id, b.mixins);
@@ -633,7 +633,7 @@ function calcSimple() {
     return {name, loaves, lwt, oneBowl, mixins, result};
   });
 
-  rc.appendChild(buildTable(bdata, levainPct, hyd, salt, null));
+  rc.appendChild(buildTable(bdata, levainPct, hyd, salt, breadType));
 
   const badge=document.createElement('div');
   const bTypeLabel = breadType === 'baguette' ? 'baguette' : 'loaf';
@@ -750,13 +750,13 @@ function calcAdv() {
     const oneBowl   = document.getElementById('ab-onebowl-'+b.id)?.checked || false;
     const name      = document.getElementById('ab-name-'+b.id)?.value.trim() || ('Bowl '+b.id);
     const levainPct = getAdvBowlLevain(b.id, globalLev);
-    const result    = computeBowl({loaves,lwt,oneBowl,hyd,salt,levainPct,mixins});
+    const result    = computeBowl({loaves,lwt,oneBowl,hyd,salt,levainPct,mixins,blend: blend.ok ? blend : null});
     return {name, loaves, lwt, oneBowl, mixins, levainPct, result};
   });
 
   const rc = document.getElementById('r-content');
   rc.innerHTML = '';
-  rc.appendChild(buildTable(bdata, globalLev, hyd, salt, blend.ok?blend:null));
+  rc.appendChild(buildTable(bdata, globalLev, hyd, salt, 'loaf'));
 
   const badge = document.createElement('div');
   badge.innerHTML = `<span class="rbadge">${Math.round(hyd*100)}% hydration · ${(salt*100).toFixed(1)}% salt · ${Math.round(globalLev*100)}% levain (global)</span>`;
@@ -764,151 +764,85 @@ function calcAdv() {
 }
 
 // ── BUILD TABLE ───────────────────────────────────────────────────────────
-// bdata = [{ name, loaves, lwt, oneBowl, mixins:[{name,pct}], result }]
-function buildTable(bdata, levainPct, hyd, salt, blend) {
+// bdata = [{ name, loaves, lwt, oneBowl, mixins:[{name,pct}], levainPct?, result }]
+// type  = 'loaf' | 'baguette' (wording only)
+// Columns for bowls not mixed in one bowl show ONE loaf's quantities; the
+// "All bowls" column always shows the full bake (per-loaf × number of loaves).
+function buildTable(bdata, levainPct, hyd, salt, type) {
   const multi = bdata.length > 1;
+  const isBag = type === 'baguette';
+  const ncols = bdata.length + 1 + (multi ? 1 : 0);
+  const factor = b => b.oneBowl ? 1 : b.loaves;   // to scale a column to its full bake
 
-  // Collect all unique mix-in names across all bowls (for row labels)
-  const allMixinNames = [];
-  bdata.forEach(b => b.mixins.forEach(m => {
-    if (!allMixinNames.includes(m.name)) allMixinNames.push(m.name);
+  // Mix-ins: merge same-named entries (case-insensitive) within each bowl
+  const mixKey = n => n.trim().toLowerCase();
+  const allMixins = [];                            // [{key, label}]
+  bdata.forEach(b => b.result.mixins.forEach(m => {
+    if (!allMixins.some(x => x.key === mixKey(m.name))) allMixins.push({ key: mixKey(m.name), label: m.name });
   }));
+  const mixG = (b, key) => b.result.mixins.filter(m => mixKey(m.name) === key).reduce((s,m)=>s+m.g, 0);
 
-  // Blend rows (advanced only)
-  const blendRows = blend
-    ? [['White',blend.w],['Whole wheat',blend.ww],['Rye',blend.rye]].filter(r=>r[1]>0)
-    : [];
+  // One table row: label, per-column getter, options
+  const row = (label, get, {cls='', isSalt=false, dashZero=false} = {}) => {
+    let h = `<tr><td class="col-lbl ${cls}">${label}</td>`, tot = 0;
+    bdata.forEach(b => {
+      const g = get(b); tot += g * factor(b);
+      h += (dashZero && !g) ? `<td class="val ${cls}">–<span class="u">&nbsp;&nbsp;</span></td>`
+                            : `<td class="val ${cls}">${fmt(g,isSalt)}<span class="u"> g</span></td>`;
+    });
+    if (multi) h += `<td class="val ${cls}">${fmt(tot,isSalt)}<span class="u"> g</span></td>`;
+    return h + '</tr>';
+  };
+  const div = () => `<tr class="divrow">${cols(ncols)}</tr>`;
 
-  const wrap = document.createElement('div');
-  wrap.className = 'out-table-wrap';
-
-  let h = '<table class="out-table">';
-
-  // ── HEADER ROW ──
-  h += '<thead><tr>';
-  h += '<th class="th-lbl">Ingredient</th>';
+  let h = '<table class="out-table"><thead><tr><th class="th-lbl">Ingredient</th>';
   bdata.forEach(b => {
-    const isBag = breadType === 'baguette';
-    const unit  = isBag ? (b.loaves>1?'baguettes':'baguette') : (b.loaves>1?'loaves':'loaf');
-    const mixLabel = isBag ? 'one batch' : 'one bowl';
-    const perLabel = isBag ? 'per baguette' : 'per loaf';
-    const sub = b.name
-      ? (b.oneBowl
-          ? `${b.loaves} ${unit} · ${mixLabel}`
-          : `${b.loaves} ${unit} · ${perLabel}`)
-      : (b.oneBowl
-          ? `${b.loaves} ${unit} · ${mixLabel}`
-          : `×${b.loaves} for full bake`);
+    const unit = isBag ? (b.loaves>1?'baguettes':'baguette') : (b.loaves>1?'loaves':'loaf');
+    const sub  = b.oneBowl
+      ? `${b.loaves} ${unit} · ${isBag?'one batch':'one bowl'}`
+      : `${b.loaves} ${unit} · quantities for one ${isBag?'baguette':'loaf'}`;
     const levainNote = (b.levainPct !== undefined && Math.round(b.levainPct*100) !== Math.round(levainPct*100))
       ? ` · ${Math.round(b.levainPct*100)}% levain` : '';
     h += `<th>${b.name?esc(b.name):'Quantities'}<span class="sub-hdr">${sub}${levainNote}</span></th>`;
   });
-  if (multi) h += '<th>All bowls</th>';
-  h += '</tr></thead>';
-
-  // ── BODY ──
-  h += '<tbody>';
+  if (multi) h += '<th>All bowls<span class="sub-hdr">full bake</span></th>';
+  h += '</tr></thead><tbody>';
 
   // Mixing order: levain → water → salt → flour
-  const baseRows = [
-    { key:'levain', label:'Levain', isSalt:false },
-    { key:'water',  label:'Water',  isSalt:false },
-    { key:'salt',   label:'Salt',   isSalt:true  },
-    { key:'flour',  label:'Flour',  isSalt:false },
-  ];
+  h += row('Levain', b => b.result.levain);
+  h += row('Water',  b => b.result.water);
+  h += row('Salt',   b => b.result.salt, {isSalt:true});
+  h += row('Flour',  b => b.result.flour);
 
-  baseRows.forEach(r => {
-    h += `<tr><td class="col-lbl">${r.label}</td>`;
-    let rowTotal = 0;
-    bdata.forEach(b => {
-      const g = b.result[r.key];
-      rowTotal += g;
-      h += `<td class="val">${fmt(g,r.isSalt)}<span class="u"> g</span></td>`;
-    });
-    if (multi) h += `<td class="val">${fmt(rowTotal,r.isSalt)}<span class="u"> g</span></td>`;
-    h += '</tr>';
-  });
-
-  // Mix-ins
-  if (allMixinNames.length) {
-    h += '<tr class="divrow">'+cols(bdata.length+1+(multi?1:0))+'</tr>';
-    allMixinNames.forEach(name => {
-      h += `<tr><td class="col-lbl sub">${esc(name)}</td>`;
-      let rowTotal = 0;
-      bdata.forEach(b => {
-        const mx = b.result.mixins.find(m=>m.name===name);
-        const g  = mx ? mx.g : 0;
-        rowTotal += g;
-        h += `<td class="val sub">${fmt(g,false)}<span class="u"> g</span></td>`;
-      });
-      if (multi) h += `<td class="val sub">${fmt(rowTotal,false)}<span class="u"> g</span></td>`;
-      h += '</tr>';
+  // Flour blend breakdown (advanced, only when not 100% white)
+  const split = bdata[0].result.split;
+  if (split && (split.ww > 0 || split.rye > 0 || bdata.some(b => b.result.split && (b.result.split.ww || b.result.split.rye)))) {
+    [['White', 'white'], ['Whole wheat', 'ww'], ['Rye', 'rye']].forEach(([label, k]) => {
+      if (bdata.some(b => b.result.split[k] !== 0)) h += row(label, b => b.result.split[k], {cls:'sub', dashZero:true});
     });
   }
 
-  // Blend breakdown (advanced)
-  if (blendRows.length) {
-    h += '<tr class="divrow">'+cols(bdata.length+1+(multi?1:0))+'</tr>';
-    blendRows.forEach(([label, pct]) => {
-      h += `<tr><td class="col-lbl sub">${label}</td>`;
-      let rowTotal=0;
-      bdata.forEach(b => {
-        const g = b.result.flour * pct/100;
-        rowTotal += g;
-        h += `<td class="val sub">${fmt(g,false)}<span class="u"> g</span></td>`;
-      });
-      if (multi) h += `<td class="val sub">${fmt(rowTotal,false)}<span class="u"> g</span></td>`;
-      h += '</tr>';
-    });
+  if (allMixins.length) {
+    h += div();
+    allMixins.forEach(m => { h += row(esc(m.label), b => mixG(b, m.key), {cls:'sub', dashZero:true}); });
   }
 
-  // Flour summary rows
-  h += '<tr class="divrow">'+cols(bdata.length+1+(multi?1:0))+'</tr>';
-  // Added flour
-  h += `<tr><td class="col-lbl sub">Added flour</td>`;
-  let addedFTotal = 0;
-  bdata.forEach(b => {
-    addedFTotal += b.result.addedFlour;
-    h += `<td class="val sub">${fmt(b.result.addedFlour,false)}<span class="u"> g</span></td>`;
-  });
-  if (multi) h += `<td class="val sub">${fmt(addedFTotal,false)}<span class="u"> g</span></td>`;
-  h += '</tr>';
-  // Total flour (incl. levain)
-  h += `<tr><td class="col-lbl sub">Total flour</td>`;
-  let totalFTotal = 0;
-  bdata.forEach(b => {
-    totalFTotal += b.result.totalFlour;
-    h += `<td class="val sub">${fmt(b.result.totalFlour,false)}<span class="u"> g</span></td>`;
-  });
-  if (multi) h += `<td class="val sub">${fmt(totalFTotal,false)}<span class="u"> g</span></td>`;
-  h += '</tr>';
+  h += div();
+  h += row('Total flour (incl. levain)', b => b.result.totalFlour, {cls:'sub'});
+  h += row('Total dough', b => b.result.totalDough, {cls:'total-row'});
 
-  // Total dough row (actual post-rounding weight)
-  h += '<tr>';
-  h += '<td class="col-lbl total-row">Total dough</td>';
-  let grandTotal = 0;
-  bdata.forEach(b => {
-    grandTotal += b.result.totalDough;
-    h += `<td class="val total-row">${fmt(b.result.totalDough,false)}<span class="u"> g</span></td>`;
+  // Notes: division after bulk, and impossible blends
+  bdata.filter(b => b.oneBowl && b.loaves > 1).forEach(b => {
+    const piece = isBag ? 'baguette' : 'piece';
+    h += `<tr class="note-row"><td colspan="${ncols}">${b.name ? esc(b.name)+': d' : 'D'}ivide into ${b.loaves} ${piece}s of approx. ${fmt(b.result.totalDough / b.loaves, false)} g each after bulk fermentation.</td></tr>`;
   });
-  if (multi) h += `<td class="val total-row">${fmt(grandTotal,false)}<span class="u"> g</span></td>`;
-  h += '</tr>';
-
-  // Per-loaf division notes
-  const noteBowls = bdata.filter(b => b.oneBowl && b.loaves>1);
-  if (noteBowls.length) {
-    const colSpan = bdata.length + 1 + (multi?1:0);
-    noteBowls.forEach(b => {
-      const pieceWt = fmt(b.result.totalDough / b.loaves, false);
-      const pieceName = breadType === 'baguette' ? 'baguette' : 'piece';
-      const note = b.name
-        ? `${esc(b.name)}: divide into ${b.loaves} ${pieceName}${b.loaves>1?'s':''} of approx. ${pieceWt} g each after bulk fermentation.`
-        : `Divide into ${b.loaves} ${pieceName}${b.loaves>1?'s':''} of approx. ${pieceWt} g each after bulk fermentation.`;
-      h += `<tr class="note-row"><td colspan="${colSpan}">${note}</td></tr>`;
-    });
+  if (bdata.some(b => b.result.split && b.result.split.white < 0)) {
+    h += `<tr class="note-row warn"><td colspan="${ncols}">⚠ The levain's flour (assumed white) is more than the white share of this blend. Lower the levain or raise the white percentage.</td></tr>`;
   }
 
   h += '</tbody></table>';
+  const wrap = document.createElement('div');
+  wrap.className = 'out-table-wrap';
   wrap.innerHTML = h;
   return wrap;
 }
@@ -922,11 +856,10 @@ function cols(n) {
 // ── FORMAT ────────────────────────────────────────────────────────────────
 function fmt(g, isSalt) {
   if (isSalt) return (Math.round(g*10)/10).toFixed(1);
-  if (g>=10000) return (Math.ceil(g/1000*10)/10).toFixed(1).replace(/\.0$/,'')+'k';
-  return Math.ceil(g).toString();
+  return (Math.ceil(g - 1e-9) || 0).toLocaleString('en-AU');
 }
 function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function rInt(id,def){ const e=document.getElementById(id); return e?Math.max(1,parseInt(e.value)||def):def; }
 function rFlt(id,def){ const e=document.getElementById(id); return e?(parseFloat(e.value)||def):def; }
@@ -941,7 +874,7 @@ function updateGuideLink() {
     if (mode === 'simple') {
       const b = bowls[0]; if (!b) return;
       loaves   = rInt('bowl-loaves-'+b.id, 1);
-      lwt      = rFlt('bowl-weight-'+b.id, 950);
+      lwt      = rFlt('bowl-weight-'+b.id, getDefaultWeight());
       onebowl  = document.getElementById('bowl-onebowl-'+b.id)?.checked ? 1 : 0;
       bowl     = document.getElementById('bowl-name-'+b.id)?.value.trim() || 'Bowl 1';
       const lp = STEP_PCT[stepVal];
