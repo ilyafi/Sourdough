@@ -309,7 +309,7 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
       <p id="levain-build-text"></p>
       <div class="callout">
         <div class="callout-title">Not enough starter?</div>
-        <p>Use what you have and keep the flour and water the same. The levain will just take a bit longer to become ripe and bubbly — give it a few extra hours.</p>
+        <p id="short-starter-text"></p>
       </div>
       <p id="starter-feed-text"></p>
       <h3 id="starter-care">Starter care</h3>
@@ -566,6 +566,11 @@ function render() {
   // Step 1: levain build and starter feed
   document.getElementById('levain-build-text').innerHTML =
     `Combine <span class="q">${g(B.starter)}</span> sourdough starter with <span class="q">${g(B.flour)}</span> flour and <span class="q">${g(B.water)}</span> water in your levain jar. Mix well, cover loosely, and leave at room temperature. By mixing time this gives about ${g(B.total)} of levain — you need ${g(plan.levainNeeded)}${multi ? ' for all your bowls' : ''}.`;
+  // Short of starter: keep the total weight, make up the difference with more flour and water in equal parts
+  const exStarter = Math.max(5, Math.floor(B.starter / 2));
+  const exEach = Math.ceil((B.total - exStarter) / 2);
+  document.getElementById('short-starter-text').innerHTML =
+    `Use whatever starter you have and make up the difference with extra flour and water, keeping the flour and water equal to each other. For example, with only <span class="q">${g(exStarter)}</span> of starter, use <span class="q">${g(exEach)}</span> flour and <span class="q">${g(exEach)}</span> water. The levain will just take a bit longer to become ripe and bubbly — give it a few extra hours.`;
   const feed = Math.max(20, Math.ceil(B.starter / 5) * 5);
   document.getElementById('starter-feed-text').innerHTML =
     `After mixing the levain, feed your starter by mixing <span class="q">${feed} g</span> each of flour and water back into the remaining starter in the jar. This gives you more than you took out, even allowing for wastage.`;
