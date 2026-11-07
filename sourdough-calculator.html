@@ -321,6 +321,7 @@ try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') 
 
 </main>
 
+<script src="sourdough-core.js"></script>
 <script>
 // ── STATE ─────────────────────────────────────────────────────────────────
 let mode    = 'simple';
@@ -566,54 +567,8 @@ function calc() {
   updateGuideLink();
 }
 
-// ── COMPUTE one bowl ──────────────────────────────────────────────────────
-// All percentages are of TOTAL flour (true baker's %).
-// Levain at 100% hydration: levain flour = levain/2, levain water = levain/2.
-//
-// Let T = total flour.
-//   levain       = T * levainPct
-//   added flour  = T - T*levainPct/2  = T*(1 - levainPct/2)
-//   added water  = T*hyd - T*levainPct/2 = T*(hyd - levainPct/2)
-//   salt         = T*saltPct
-//   mix-ins      = T*mxPct each
-//   total dough  = T*(1 + hyd + saltPct + sum(mxPct))  [levain terms cancel]
-//
-// So: T = targetDough / (1 + hyd + saltPct + sum(mxPct))
-function computeBowl({loaves, lwt, oneBowl, hyd, salt, levainPct, mixins, blend}) {
-  const mxTotal = mixins.reduce((s,m)=>s+m.pct/100, 0);
-  const div     = 1 + hyd + salt + mxTotal;   // levainPct cancels
-  const mult    = oneBowl ? loaves : 1;
-  const T       = (lwt * mult) / div;          // total flour (incl. levain flour)
-
-  // Round up so there's never too little dough; salt to 0.1 g
-  const rLevain = Math.ceil(T * levainPct);
-  const rWater  = Math.ceil(T * hyd - T * levainPct / 2);
-  const rSalt   = Math.round(T * salt * 10) / 10;
-  const rFlour  = Math.ceil(T * (1 - levainPct / 2));
-  const rMixins = mixins.map(m=>({ name:m.name, g: Math.ceil(T * m.pct/100) }));
-
-  // Flour blend: percentages are of TOTAL flour. Levain flour is assumed to be
-  // white, so whole wheat and rye come entirely from the added flour and white
-  // makes up the rest. Rows always sum exactly to the added flour.
-  let split = null;
-  if (blend) {
-    const ww  = Math.round(T * blend.ww  / 100);
-    const rye = Math.round(T * blend.rye / 100);
-    split = { white: rFlour - ww - rye, ww, rye };
-  }
-
-  const total = rLevain + rWater + rSalt + rFlour + rMixins.reduce((s,m)=>s+m.g, 0);
-  return {
-    levain:     rLevain,
-    water:      rWater,
-    salt:       rSalt,
-    flour:      rFlour,
-    totalFlour: Math.ceil(T),
-    mixins:     rMixins,
-    split,
-    totalDough: Math.round(total),
-  };
-}
+// ── COMPUTE one bowl (maths lives in sourdough-core.js, shared with the guide) ──
+const computeBowl = Sourdough.computeBowl;
 
 // ── SIMPLE ────────────────────────────────────────────────────────────────
 function calcSimple() {
@@ -854,10 +809,7 @@ function cols(n) {
 }
 
 // ── FORMAT ────────────────────────────────────────────────────────────────
-function fmt(g, isSalt) {
-  if (isSalt) return (Math.round(g*10)/10).toFixed(1);
-  return (Math.ceil(g - 1e-9) || 0).toLocaleString('en-AU');
-}
+function fmt(g, isSalt) { return Sourdough.fmt(g, isSalt); }
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -865,48 +817,35 @@ function rInt(id,def){ const e=document.getElementById(id); return e?Math.max(1,
 function rFlt(id,def){ const e=document.getElementById(id); return e?(parseFloat(e.value)||def):def; }
 
 // ── GUIDE LINK ────────────────────────────────────────────────────────────
+// Sends the whole recipe (all bowls) so the guide can work out every quantity,
+// including one levain build for the full bake.
+function currentRecipe() {
+  if (mode === 'simple') {
+    const lp = STEP_PCT[stepVal];
+    return { type: breadType, hyd: 0.70, salt: 0.02, blend: null,
+      bowls: bowls.map((b, i) => ({
+        name: document.getElementById('bowl-name-'+b.id)?.value.trim() || ('Bowl '+(i+1)),
+        loaves: rInt('bowl-loaves-'+b.id, 1), lwt: rFlt('bowl-weight-'+b.id, getDefaultWeight()),
+        oneBowl: !!document.getElementById('bowl-onebowl-'+b.id)?.checked,
+        levainPct: lp, mixins: getBowlMixins(b.id, b.mixins) })) };
+  }
+  const blend = getBlend();
+  const globalLev = rFlt('a-starter',15)/100;
+  return { type: 'loaf', hyd: rFlt('a-hyd',70)/100, salt: rFlt('a-salt',2)/100,
+    blend: blend.ok && (blend.ww || blend.rye) ? blend : null,
+    bowls: advBowls.map((b, i) => ({
+      name: document.getElementById('ab-name-'+b.id)?.value.trim() || ('Bowl '+(i+1)),
+      loaves: rInt('ab-loaves-'+b.id, 1), lwt: rFlt('ab-weight-'+b.id, 850),
+      oneBowl: !!document.getElementById('ab-onebowl-'+b.id)?.checked,
+      levainPct: getAdvBowlLevain(b.id, globalLev), mixins: getAdvMixins() })) };
+}
 function updateGuideLink() {
   const link = document.getElementById('guide-link');
   if (!link) return;
-  // Gather Bowl 1 data (simple mode) or Adv Bowl 1 (advanced mode)
-  try {
-    let levain, water, salt, flour, totalFlour, hyd_pct, loaves, lwt, onebowl, bowl, mixins;
-    if (mode === 'simple') {
-      const b = bowls[0]; if (!b) return;
-      loaves   = rInt('bowl-loaves-'+b.id, 1);
-      lwt      = rFlt('bowl-weight-'+b.id, getDefaultWeight());
-      onebowl  = document.getElementById('bowl-onebowl-'+b.id)?.checked ? 1 : 0;
-      bowl     = document.getElementById('bowl-name-'+b.id)?.value.trim() || 'Bowl 1';
-      const lp = STEP_PCT[stepVal];
-      const hyd = 0.70, saltPct = 0.02;
-      const res = computeBowl({loaves, lwt, oneBowl: onebowl===1, hyd, salt: saltPct, levainPct: lp, mixins: getBowlMixins(b.id, b.mixins)});
-      levain = res.levain; water = res.water; salt = res.salt; flour = res.flour;
-      totalFlour = res.totalFlour; hyd_pct = Math.round(hyd*100);
-      mixins = getBowlMixins(b.id, b.mixins).map(m=>m.name).join(',');
-    } else {
-      const b = advBowls[0]; if (!b) return;
-      loaves   = rInt('ab-loaves-'+b.id, 1);
-      lwt      = rFlt('ab-weight-'+b.id, 850);
-      onebowl  = document.getElementById('ab-onebowl-'+b.id)?.checked ? 1 : 0;
-      bowl     = document.getElementById('ab-name-'+b.id)?.value.trim() || 'Bowl 1';
-      const hyd = rFlt('a-hyd',70)/100;
-      const saltPct = rFlt('a-salt',2)/100;
-      const lp = getAdvBowlLevain(b.id, rFlt('a-starter',15)/100);
-      const res = computeBowl({loaves, lwt, oneBowl: onebowl===1, hyd, salt: saltPct, levainPct: lp, mixins: getAdvMixins()});
-      levain = res.levain; water = res.water; salt = res.salt; flour = res.flour;
-      totalFlour = res.totalFlour; hyd_pct = Math.round(hyd*100);
-      mixins = getAdvMixins().map(m=>m.name).join(',');
-    }
-    const params = new URLSearchParams({
-      levain, water, salt, flour, totalFlour, hyd_pct,
-      loaves, lwt, onebowl, bowl, mixins,
-      type: breadType
-    });
-    link.href = 'guide.html?' + params.toString();
-  } catch(e) {
-    link.href = 'guide.html';
-  }
+  try { link.href = 'guide.html?' + Sourdough.encodeRecipe(currentRecipe()); }
+  catch (e) { link.href = 'guide.html'; }
 }
+
 // ── THEME ─────────────────────────────────────────────────────────────────
 const THEMES = ['auto', 'light', 'dark'];
 const THEME_LABEL = { auto: 'Theme: Auto', light: 'Theme: Light', dark: 'Theme: Dark' };

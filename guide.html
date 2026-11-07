@@ -4,258 +4,215 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ilya's Sourdough Guide</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+// Apply saved theme before paint to avoid a flash
+try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <style>
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+
+/* ── COLOUR TOKENS (same as the calculator) ── */
 :root {
-  --ink:#1c1410; --brown:#5c3d1e; --crust:#8b5e2e; --tan:#c8a97a;
-  --cream:#f2ead8; --paper:#faf6ee; --warm-white:#fffdf8;
-  --rust:#c4522a; --mist:#e8dfc8; --grey:#9e8e78; --rule:#ddd4be;
-  --sidebar:240px;
+  color-scheme: light;
+  --bg:#f5efe4; --surface:#fffcf7; --surface-2:#f4ede1;
+  --text:#1e1914; --text-2:#4a4036; --text-3:#6a5e50;
+  --border:#d8ccb9; --border-strong:#a8977e;
+  --accent:#8a4719; --on-accent:#fffaf3; --accent-text:#83421a; --accent-soft:#f1e2cf;
+  --focus:rgba(138,71,25,.28);
+  --tip:#8a4719; --tip-bg:#f6ebdc; --sci:#3f6b4a; --sci-bg:#e6efe6; --note:#a8977e; --note-bg:#f1ebe0;
+  --sidebar:230px;
 }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#13100d; --surface:#1d1814; --surface-2:#262019;
+    --text:#f2e9db; --text-2:#d0c1ab; --text-3:#ab9c86;
+    --border:#3b3229; --border-strong:#6a5b4a;
+    --accent:#e39d5f; --on-accent:#1c130b; --accent-text:#eeaa6e; --accent-soft:#3a2a1c;
+    --focus:rgba(227,157,95,.32);
+    --tip:#e39d5f; --tip-bg:#2c2118; --sci:#8fc49b; --sci-bg:#1b2620; --note:#6a5b4a; --note-bg:#221c17;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#13100d; --surface:#1d1814; --surface-2:#262019;
+  --text:#f2e9db; --text-2:#d0c1ab; --text-3:#ab9c86;
+  --border:#3b3229; --border-strong:#6a5b4a;
+  --accent:#e39d5f; --on-accent:#1c130b; --accent-text:#eeaa6e; --accent-soft:#3a2a1c;
+  --focus:rgba(227,157,95,.32);
+  --tip:#e39d5f; --tip-bg:#2c2118; --sci:#8fc49b; --sci-bg:#1b2620; --note:#6a5b4a; --note-bg:#221c17;
+}
+
 html { scroll-behavior:smooth }
 body {
-  background:var(--cream); color:var(--ink);
-  font-family:'Cormorant Garamond',serif;
-  font-size:17px; line-height:1.75; min-height:100vh;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 10% 0%,rgba(200,169,122,.2) 0%,transparent 60%),
-    radial-gradient(ellipse 60% 60% at 90% 100%,rgba(92,61,30,.08) 0%,transparent 55%);
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif; font-size:16.5px; line-height:1.65; min-height:100vh;
+  -webkit-font-smoothing:antialiased;
 }
+h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant-numeric:lining-nums; font-feature-settings:'lnum' 1 }
+.q { font-weight:600; color:var(--accent-text); white-space:nowrap }
+.mono { font-family:'DM Mono',monospace }
 
-/* BANNERS */
-#pers-banner {
-  display:none; background:var(--brown); color:var(--cream);
-  padding:12px 32px; font-family:'DM Mono',monospace;
-  font-size:11px; letter-spacing:.07em; border-bottom:2px solid var(--crust);
-}
-#pers-banner em { font-style:italic; color:var(--tan) }
-#generic-note {
-  display:none; background:rgba(200,169,122,.18); color:var(--brown);
-  padding:10px 32px; font-family:'DM Mono',monospace;
-  font-size:11px; letter-spacing:.07em; border-bottom:1px solid var(--rule);
-}
-#generic-note a { color:var(--rust) }
-.qty-live { font-weight:700; color:var(--rust); border-bottom:1px dashed var(--rust); cursor:default }
+/* ── BANNER ── */
+.banner { padding:12px 32px; font-size:14px; border-bottom:1px solid var(--border); background:var(--surface-2); color:var(--text-2) }
+.banner strong { color:var(--text) }
+.banner a { color:var(--accent-text); font-weight:600 }
 
-/* TOP NAV */
+/* ── TOP NAV ── */
 .topnav {
   position:sticky; top:0; z-index:200;
-  background:rgba(242,234,216,.97); backdrop-filter:blur(6px);
-  border-bottom:1px solid var(--rule);
-  padding:0 32px;
-  display:flex; align-items:stretch; justify-content:space-between; gap:16px;
-  min-height:52px;
+  background:color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px; display:flex; align-items:stretch; justify-content:space-between; gap:12px; min-height:54px;
 }
-.topnav-left { display:flex; align-items:center; gap:24px }
-.topnav-brand { font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:600; color:var(--ink); text-decoration:none; white-space:nowrap; padding:14px 0 }
-.topnav-brand em { font-style:italic; color:var(--rust) }
-
-/* MODE TABS — inside the topnav */
-.mode-tabs { display:flex; align-items:stretch; gap:0; margin-left:8px }
+.topnav-left { display:flex; align-items:stretch; gap:20px }
+.topnav-brand { font-size:19px; font-weight:600; color:var(--text); text-decoration:none; white-space:nowrap; align-self:center }
+.topnav-brand em { font-style:italic; color:var(--accent-text) }
+.mode-tabs { display:flex; align-items:stretch }
 .mode-tab {
-  display:flex; align-items:center; gap:7px;
-  padding:0 20px; border:none; background:none; cursor:pointer;
-  font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--grey); border-bottom:3px solid transparent;
-  transition:color .15s, border-color .15s;
-  white-space:nowrap;
+  display:flex; align-items:center; gap:7px; padding:0 16px; border:none; background:none; cursor:pointer;
+  font:500 15px 'Inter',system-ui,sans-serif; color:var(--text-2);
+  border-bottom:3px solid transparent; white-space:nowrap;
 }
-.mode-tab:hover { color:var(--brown) }
-.mode-tab.active { color:var(--brown); border-bottom-color:var(--rust); font-weight:500 }
-.mode-tab .tab-icon { font-size:15px }
+.mode-tab:hover { color:var(--text) }
+.mode-tab.active { color:var(--accent-text); border-bottom-color:var(--accent); font-weight:600 }
+.topnav-right { display:flex; align-items:center; gap:8px }
+.btn-ghost {
+  display:inline-flex; align-items:center; gap:6px; font:500 14px 'Inter',system-ui,sans-serif; color:var(--text-2);
+  text-decoration:none; padding:7px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface);
+  cursor:pointer; white-space:nowrap;
+}
+.btn-ghost:hover { background:var(--accent-soft); color:var(--text); border-color:var(--border-strong) }
 
-.topnav-back { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--grey); text-decoration:none; padding:6px 14px; border:1px solid var(--rule); border-radius:2px; transition:background .15s,color .15s; white-space:nowrap; align-self:center }
-.topnav-back:hover { background:var(--brown); color:var(--cream); border-color:var(--brown) }
-
-/* LAYOUT */
+/* ── LAYOUT ── */
 .layout { display:flex; max-width:1100px; margin:0 auto; padding:0 24px; gap:48px }
+.sidebar { width:var(--sidebar); flex-shrink:0; position:sticky; top:54px; height:calc(100vh - 54px); overflow-y:auto; padding:32px 0 60px }
+.nav-section { margin-bottom:22px }
+.nav-section-title { font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text-3); margin-bottom:6px }
+.nav-link { display:block; padding:5px 8px; font-size:15px; color:var(--text-2); text-decoration:none; border-left:2px solid transparent; line-height:1.35 }
+.nav-link:hover { color:var(--text); border-left-color:var(--border-strong) }
+.nav-link.active { color:var(--accent-text); border-left-color:var(--accent); font-weight:600 }
+.nav-link.sub { font-size:14px; padding-left:18px; color:var(--text-3) }
+.hidden { display:none !important }
+.content { flex:1; min-width:0; padding:40px 0 100px; max-width:720px }
 
-/* SIDEBAR */
-.sidebar { width:var(--sidebar); flex-shrink:0; position:sticky; top:52px; height:calc(100vh - 52px); overflow-y:auto; padding:32px 0 60px }
-.sidebar::-webkit-scrollbar { width:3px }
-.sidebar::-webkit-scrollbar-thumb { background:var(--rule); border-radius:2px }
-.nav-section { margin-bottom:24px }
-.nav-section-title { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--grey); margin-bottom:8px; padding-left:2px }
-.nav-link { display:block; padding:5px 10px 5px 2px; font-family:'Cormorant Garamond',serif; font-size:14px; color:var(--brown); text-decoration:none; border-left:2px solid transparent; transition:border-color .15s,color .15s,padding-left .15s; line-height:1.3 }
-.nav-link:hover { color:var(--rust); border-left-color:var(--tan); padding-left:8px }
-.nav-link.active { color:var(--rust); border-left-color:var(--rust); padding-left:8px; font-weight:600 }
-.nav-link.sub { font-size:13px; color:var(--grey); padding-left:14px }
-.nav-link.sub:hover { color:var(--crust); border-left-color:var(--tan); padding-left:20px }
-/* hide mode-specific nav items */
-.nav-link[data-mode].hidden, .nav-section[data-mode].hidden { display:none }
+/* ── HERO ── */
+.hero { margin-bottom:48px; padding-bottom:32px; border-bottom:1px solid var(--border) }
+.hero-sub { font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px }
+.hero-mode-label { display:inline-block; font-size:13px; font-weight:600; background:var(--accent); color:var(--on-accent); padding:3px 10px; border-radius:6px; margin-bottom:14px }
+.hero h1 { font-size:clamp(38px,5.5vw,60px); font-weight:600; line-height:1.05; margin-bottom:12px }
+.hero h1 em { font-style:italic; color:var(--accent-text) }
+.hero p { font-size:18px; color:var(--text-2); max-width:580px }
 
-/* CONTENT */
-.content { flex:1; min-width:0; padding:40px 0 100px }
+/* ── SECTIONS ── */
+.section { margin-bottom:56px; scroll-margin-top:70px }
+.section-num { font-size:13px; font-weight:600; color:var(--text-3); margin-bottom:4px }
+.section h2 { font-size:clamp(28px,3.6vw,36px); font-weight:600; margin-bottom:18px; line-height:1.15 }
+.section h3 { font-size:23px; font-weight:600; font-style:italic; color:var(--accent-text); margin:28px 0 10px }
+.section p { margin-bottom:14px }
+.divider { height:1px; background:var(--border); margin:44px 0 }
 
-/* HERO */
-.hero { margin-bottom:52px; padding-bottom:36px; border-bottom:1px solid var(--rule) }
-.hero h1 { font-size:clamp(36px,5.5vw,60px); font-weight:600; line-height:1.05; color:var(--ink); margin-bottom:10px }
-.hero h1 em { font-style:italic; color:var(--rust) }
-.hero-sub { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--grey); margin-bottom:18px }
-.hero p { font-size:18px; color:var(--brown); max-width:560px; line-height:1.7 }
-/* mode label in hero */
-.hero-mode-label { display:inline-block; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--rust); color:white; padding:3px 10px; border-radius:2px; margin-bottom:14px }
-
-/* SECTIONS */
-.section { margin-bottom:60px; scroll-margin-top:68px }
-.section.hidden { display:none }
-.section-num { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--tan); margin-bottom:6px }
-.section h2 { font-size:clamp(24px,3.5vw,34px); font-weight:600; color:var(--brown); margin-bottom:20px; line-height:1.2 }
-.section h3 { font-size:20px; font-weight:600; color:var(--crust); margin:28px 0 12px; font-style:italic }
-.section p { margin-bottom:14px; color:var(--ink) }
-.section p:last-child { margin-bottom:0 }
-
-/* CALLOUTS */
-.callout { margin:20px 0; padding:16px 20px; border-left:3px solid var(--tan); background:rgba(200,169,122,.1); border-radius:0 2px 2px 0 }
-.callout.hidden { display:none }
-.callout.tip { border-left-color:var(--crust); background:rgba(139,94,46,.08) }
-.callout.science { border-left-color:#6b8e6b; background:rgba(107,142,107,.08) }
-.callout-title { font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--grey); margin-bottom:6px }
-.callout p { font-size:15.5px; color:var(--brown); margin-bottom:8px }
+/* ── CALLOUTS ── */
+.callout { margin:20px 0; padding:14px 18px; border-left:4px solid var(--note); background:var(--note-bg); border-radius:0 8px 8px 0 }
+.callout.tip { border-left-color:var(--tip); background:var(--tip-bg) }
+.callout.science { border-left-color:var(--sci); background:var(--sci-bg) }
+.callout-title { font-size:13px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--text-2); margin-bottom:4px }
+.callout.science .callout-title { color:var(--sci) }
+.callout.tip .callout-title { color:var(--tip) }
+.callout p { font-size:15.5px; margin-bottom:8px }
 .callout p:last-child { margin-bottom:0 }
 
-/* STEP LIST */
-.step-list { list-style:none; margin:16px 0 20px }
-.step-list li { display:flex; gap:14px; align-items:baseline; padding:9px 0; border-bottom:1px solid rgba(200,169,122,.25) }
+/* ── LISTS ── */
+.step-list { list-style:none; margin:14px 0 20px; counter-reset:step }
+.step-list li { position:relative; padding:10px 0 10px 36px; border-bottom:1px solid var(--border) }
 .step-list li:last-child { border-bottom:none }
-.step-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--tan); flex-shrink:0; width:20px; text-align:right; padding-top:2px }
-.step-text { font-size:16px; line-height:1.6 }
-
-/* BULLET LIST */
+.step-list li::before { counter-increment:step; content:counter(step); position:absolute; left:0; top:11px; width:22px; text-align:right; font:500 14px 'DM Mono',monospace; color:var(--accent-text) }
 .blist { list-style:none; margin:12px 0 16px }
-.blist li { padding:5px 0 5px 18px; position:relative; font-size:16px; line-height:1.6; border-bottom:1px solid rgba(200,169,122,.18) }
+.blist li { padding:6px 0 6px 20px; position:relative; border-bottom:1px solid var(--border) }
 .blist li:last-child { border-bottom:none }
-.blist li::before { content:'—'; position:absolute; left:0; color:var(--tan); font-size:13px }
+.blist li::before { content:'–'; position:absolute; left:2px; color:var(--text-3) }
 
-/* VIDEO LINK */
-.video-link { display:inline-flex; align-items:center; gap:8px; margin:16px 0; padding:10px 18px; background:var(--brown); color:var(--cream); text-decoration:none; border-radius:2px; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.08em; transition:background .15s,transform .1s,box-shadow .15s; box-shadow:3px 3px 0 var(--crust) }
-.video-link:hover { background:var(--rust); box-shadow:4px 4px 0 #7a2c10 }
-.video-link:active { transform:translate(2px,2px); box-shadow:1px 1px 0 #7a2c10 }
+/* ── VIDEO LINK ── */
+.video-link { display:inline-flex; align-items:center; gap:8px; margin:6px 0 14px; padding:9px 16px; background:var(--accent); color:var(--on-accent); text-decoration:none; border-radius:8px; font:500 14px 'Inter',system-ui,sans-serif }
+.video-link:hover { filter:brightness(1.08) }
 
-/* INGREDIENT TABLE */
-.ing-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:15.5px }
-.ing-table th { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--grey); text-align:left; padding:6px 12px 6px 0; border-bottom:1px solid var(--rule) }
-.ing-table td { padding:9px 12px 9px 0; border-bottom:1px solid rgba(200,169,122,.2); vertical-align:top }
+/* ── BOWL PICKER ── */
+.bowl-pick { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:6px 0 14px }
+.bowl-pick-lbl { font-size:14px; font-weight:600; color:var(--text-2); margin-right:4px }
+.bowl-pick button { font:500 14px 'Inter',system-ui,sans-serif; padding:6px 12px; border:1px solid var(--border); background:var(--surface); color:var(--text-2); border-radius:999px; cursor:pointer }
+.bowl-pick button.active { background:var(--accent); border-color:var(--accent); color:var(--on-accent) }
+
+/* ── INGREDIENT TABLES ── */
+.ing-block { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0 18px }
+.ing-block h4 { font:600 15px 'Inter',system-ui,sans-serif; margin-bottom:6px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap }
+.ing-block h4 span { font-weight:400; color:var(--text-3); font-size:14px }
+.ing-table { width:100%; border-collapse:collapse }
+.ing-table td { padding:8px 0; border-bottom:1px solid var(--border); vertical-align:baseline }
 .ing-table tr:last-child td { border-bottom:none }
-.ing-table tr.hidden { display:none }
-.blist li.hidden { display:none }
-.ing-table .qty { font-weight:600; color:var(--brown); white-space:nowrap }
-.ing-table .note { font-size:14px; color:var(--grey); font-style:italic }
+.ing-table td.amt { text-align:right; font:500 17px 'DM Mono',monospace; white-space:nowrap; padding-left:16px; color:var(--text) }
+.ing-table td.amt small { font-size:13px; color:var(--text-3); margin-left:2px }
+.ing-table tr.sub td { font-size:15px; color:var(--text-2); padding-left:14px }
+.ing-table tr.sub td.amt { font-size:15px; color:var(--text-2) }
+.ing-table tr.total td { border-top:1px solid var(--border-strong); font-weight:600 }
+.ing-table tr.total .note { font-weight:400 }
+.ing-table td.amt.text { font:400 15px 'Inter',system-ui,sans-serif; color:var(--text-2) }
+.ing-table .note { display:block; font-size:13.5px; color:var(--text-3) }
 
-.divider { height:1px; background:var(--rule); margin:44px 0 }
-
-@media(max-width:720px) {
-  .sidebar { display:none }
+@media(max-width:760px) {
+  .sidebar, .topnav-brand { display:none }
   .layout { padding:0 16px }
-  .topnav { padding:0 16px }
-  #pers-banner,#generic-note { padding:10px 16px }
-  .mode-tab { padding:0 12px; font-size:10px }
+  .topnav { padding:0 10px 0 4px }
+  .mode-tab { padding:0 10px; font-size:15px }
+  .banner { padding:10px 16px }
+  .btn-ghost .lbl-long { display:none }
+  .content { padding-top:28px }
 }
 
-/* ── PRINT STYLES ── */
+/* ── PRINT ── */
 @media print {
-  /* hide all chrome */
-  .topnav, .sidebar, #pers-banner, #generic-note,
-  .video-link, .hero-mode-label { display:none !important }
-
-  /* show everything — both loaf and baguette */
-  .section.hidden, .callout.hidden,
-  .ing-table tr.hidden, .blist li.hidden { display:revert !important }
-
-  /* reset layout to single column */
+  :root { --text:#000; --text-2:#222; --text-3:#555; --accent-text:#5c2e10; --border:#ccc; --surface:#fff; --bg:#fff }
+  .topnav, .sidebar, .banner, .video-link, .hero-mode-label, .bowl-pick { display:none !important }
   .layout { display:block; padding:0; max-width:100% }
-  .content { padding:0 }
-  body { background:white; font-size:11pt; line-height:1.6;
-         background-image:none; color:#000 }
-
-  /* typography */
-  .hero h1 { font-size:26pt; margin-bottom:6pt }
-  .hero p   { font-size:12pt }
-  .section h2 { font-size:18pt; color:#3a2810; margin-bottom:10pt }
-  .section h3 { font-size:13pt; color:#5c3d1e }
-  .section-num { font-size:7.5pt; color:#888; letter-spacing:.1em }
-
-  /* page breaks */
-  .section { page-break-inside:avoid; margin-bottom:28pt }
-  .section h2 { page-break-after:avoid }
+  .content { padding:0; max-width:none }
+  body { font-size:10.5pt; line-height:1.5 }
+  .hero h1 { font-size:26pt } .section h2 { font-size:18pt } .section h3 { font-size:13pt }
+  .section { page-break-inside:avoid; margin-bottom:24pt }
+  .ing-block { break-inside:avoid; border-color:#ccc }
+  .callout { background:#f6f2ea !important }
   .divider { display:none }
-
-  /* baguette separator */
-  #step4b { page-break-before:always }
-  #step4b::before {
-    content:'— Baguette steps —';
-    display:block;
-    font-family:'DM Mono',monospace;
-    font-size:8pt; letter-spacing:.2em; text-transform:uppercase;
-    color:#888; text-align:center;
-    padding:10pt 0 16pt;
-    border-top:1pt solid #ccc;
-    margin-bottom:16pt;
-  }
-
-  /* callouts */
-  .callout { border-left:2pt solid #8b5e2e; background:#f8f4ec; padding:8pt 12pt; margin:10pt 0 }
-  .callout-title { font-size:7.5pt; color:#666 }
-  .callout p { font-size:10pt; color:#333 }
-
-  /* tables */
-  .ing-table th, .ing-table td { padding:5pt 8pt 5pt 0; font-size:10pt }
-  .ing-table .qty { font-weight:bold }
-
-  /* step lists */
-  .step-list li { padding:5pt 0; border-bottom:0.5pt solid #ddd }
-  .step-text { font-size:10pt }
-  .step-num { color:#8b5e2e; font-size:8pt }
-
-  /* bullet lists */
-  .blist li { font-size:10pt; padding:3pt 0 3pt 14pt }
-
-  /* hero */
-  .hero { margin-bottom:20pt; padding-bottom:14pt; border-bottom:0.5pt solid #ccc }
-
-  /* qty highlights print in black */
-  .qty-live { color:#000; border-bottom:none; font-weight:bold }
 }
 </style>
 </head>
 <body>
 
-<div id="pers-banner"></div>
-<div id="generic-note">
-  These are the default recipe quantities. <a href="sourdough-calculator.html">Open from the calculator</a> to see your specific quantities throughout.
-</div>
+<div class="banner hidden" id="banner"></div>
 
 <nav class="topnav">
   <div class="topnav-left">
-    <a class="topnav-brand" href="sourdough-calculator.html">Ilya's Sourdough <em>Calculator</em></a>
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="tab-loaf"     onclick="setGuideMode('loaf')">
-        <span class="tab-icon">🍞</span> Loaf
-      </button>
-      <button class="mode-tab"        id="tab-baguette" onclick="setGuideMode('baguette')">
-        <span class="tab-icon">🥖</span> Baguette
-      </button>
+    <a class="topnav-brand" href="sourdough-calculator.html">Ilya's Sourdough <em>Guide</em></a>
+    <div class="mode-tabs" role="tablist">
+      <button class="mode-tab active" id="tab-loaf"     onclick="setGuideMode('loaf')">🍞 Loaf</button>
+      <button class="mode-tab"        id="tab-baguette" onclick="setGuideMode('baguette')">🥖 Baguette</button>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <button onclick="printGuide()" class="topnav-back" style="cursor:pointer;border:1px solid var(--rule)">
-      🖨 Print / Save PDF
-    </button>
-    <a class="topnav-back" href="sourdough-calculator.html">← Calculator</a>
+  <div class="topnav-right">
+    <button class="btn-ghost" id="theme-btn" onclick="cycleTheme()" title="Colour theme">Theme</button>
+    <button class="btn-ghost" onclick="window.print()" title="Print or save as PDF">🖨<span class="lbl-long"> Print</span></button>
+    <a class="btn-ghost" id="calc-link" href="sourdough-calculator.html">←<span class="lbl-long"> Calculator</span></a>
   </div>
 </nav>
 
 <div class="layout">
   <aside class="sidebar">
-    <div class="nav-section" data-mode="both">
+    <div class="nav-section">
       <div class="nav-section-title">Overview</div>
       <a class="nav-link" href="#equipment">Equipment</a>
       <a class="nav-link" href="#ingredients">Ingredients</a>
       <a class="nav-link" href="#percentages">Baker's percentages</a>
       <a class="nav-link" href="#flour">Flour</a>
     </div>
-    <div class="nav-section" data-mode="both">
+    <div class="nav-section">
       <div class="nav-section-title">Steps 1–3</div>
       <a class="nav-link" href="#step1">1. Pre-ferment</a>
       <a class="nav-link sub" href="#starter-care">Starter care</a>
@@ -263,19 +220,17 @@ body {
       <a class="nav-link" href="#step3">3. Bulk fermentation</a>
       <a class="nav-link sub" href="#stretch-fold">Stretch &amp; fold ▶</a>
     </div>
-    <!-- loaf nav -->
     <div class="nav-section" data-mode="loaf">
       <div class="nav-section-title">Loaf</div>
-      <a class="nav-link" data-mode="loaf" href="#step4">4. Shaping</a>
-      <a class="nav-link sub" data-mode="loaf" href="#divide-preshape">Divide &amp; pre-shape ▶</a>
-      <a class="nav-link sub" data-mode="loaf" href="#final-shape">Final shape ▶</a>
-      <a class="nav-link" data-mode="loaf" href="#step5">5. Baking</a>
+      <a class="nav-link" href="#step4">4. Shaping</a>
+      <a class="nav-link sub" href="#divide-preshape">Divide &amp; pre-shape ▶</a>
+      <a class="nav-link sub" href="#final-shape">Final shape ▶</a>
+      <a class="nav-link" href="#step5">5. Baking</a>
     </div>
-    <!-- baguette-only nav -->
     <div class="nav-section" data-mode="baguette">
       <div class="nav-section-title">Baguette</div>
-      <a class="nav-link" data-mode="baguette" href="#step4b">4. Shaping baguettes</a>
-      <a class="nav-link" data-mode="baguette" href="#step5b">5. Baking baguettes</a>
+      <a class="nav-link" href="#step4b">4. Shaping baguettes</a>
+      <a class="nav-link" href="#step5b">5. Baking baguettes</a>
     </div>
   </aside>
 
@@ -285,12 +240,12 @@ body {
       <div class="hero-sub">A family recipe</div>
       <div class="hero-mode-label" id="hero-mode-label">Loaf guide</div>
       <h1>Ilya's Sourdough <em>Guide</em></h1>
-      <p id="hero-desc">Everything you need to bake a great sourdough loaf — from your first levain to pulling a golden crust from the oven.</p>
+      <p id="hero-desc"></p>
     </div>
 
-    <!-- ── OVERVIEW (both modes) ── -->
+    <!-- ── OVERVIEW ── -->
 
-    <section class="section" id="equipment" data-mode="both">
+    <section class="section" id="equipment">
       <div class="section-num">Before you begin</div>
       <h2>Equipment you need</h2>
       <ul class="blist">
@@ -299,7 +254,7 @@ body {
         <li>Dough whisk or sturdy wooden spoon</li>
         <li>A chopstick</li>
         <li>Bowl scraper (semi-circular)</li>
-        <li>Clean glass or plastic jar (min 600 ml) — your levain jar</li>
+        <li>Clean glass or plastic jar — your levain jar (<span id="jar-size">min 600 ml</span>)</li>
         <li>Razor blade (lame) or sharp knife</li>
         <li data-mode="loaf">A banneton, bowl or basket · lint-free cloth if banneton is not cloth-lined</li>
         <li data-mode="loaf">A dutch oven, baking stone with lid, or other suitable baking dish</li>
@@ -313,32 +268,23 @@ body {
       </div>
     </section>
 
-    <section class="section" id="ingredients" data-mode="both">
+    <section class="section" id="ingredients">
       <div class="section-num">What you need</div>
       <h2>Ingredients</h2>
       <p id="ing-intro"></p>
-      <table class="ing-table">
-        <thead><tr><th>Ingredient</th><th>Amount</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Sourdough starter</td><td class="qty">30 g</td><td class="note">Straight from fridge — see Step 1</td></tr>
-          <tr><td>White unbleached bread flour</td><td class="qty"><span data-qty="totalFlour">550</span> g</td><td class="note">Wallaby brand recommended</td></tr>
-          <tr><td>Water (added)</td><td class="qty"><span data-qty="water">346</span> g</td><td class="note">Room temp, preferably bottled or filtered</td></tr>
-          <tr><td>Cooking salt</td><td class="qty"><span data-qty="salt">11</span> g</td><td class="note"></td></tr>
-          <tr><td>Levain</td><td class="qty"><span data-qty="levain">83</span> g</td><td class="note">Made from starter — see Step 1</td></tr>
-          <tr><td>Olives, toasted walnuts, or other mix-ins</td><td class="qty">As desired</td><td class="note">Optional — ~15% of total flour</td></tr>
-          <tr class="baguette-only"><td>Bakers couche (proofing cloth)</td><td class="qty">—</td><td class="note">Replaces banneton for baguettes</td></tr>
-          <tr><td>Rice flour or coarse semolina</td><td class="qty">As needed</td><td class="note">For dusting banneton/couche</td></tr>
-        </tbody>
-      </table>
+      <div id="ing-levain"></div>
+      <div class="bowl-pick" data-picker></div>
+      <div id="ing-dough"></div>
+      <div id="ing-shopping"></div>
     </section>
 
-    <section class="section" id="percentages" data-mode="both">
+    <section class="section" id="percentages">
       <div class="section-num">A bit of theory</div>
       <h2>Baker's percentages</h2>
       <p>Most ingredients are expressed as a percentage of the total flour in the bread. <em>Hydration</em> refers to water as a percentage of total flour. Salt is usually 2% and mix-ins around 15%.</p>
       <div class="callout science">
         <div class="callout-title">About hydration</div>
-        <p>Your starter is kept at 100% hydration — always feed with equal parts flour and water. This recipe is at <span data-qty="hyd_pct">70</span>% hydration: a good balance, not too sticky and reasonably easy to work.</p>
+        <p>Your starter is kept at 100% hydration — always feed with equal parts flour and water. <span id="hyd-note"></span></p>
       </div>
       <div class="callout science">
         <div class="callout-title">A bit of science</div>
@@ -346,39 +292,45 @@ body {
       </div>
     </section>
 
-    <section class="section" id="flour" data-mode="both">
+    <section class="section" id="flour">
       <div class="section-num">Ingredients</div>
       <h2>Flour</h2>
       <p>I recommend <strong>Wallaby brand white bread flour</strong> — sold in 5 kg bags in most supermarkets (~$14). The higher protein content compared to plain flour gives a better crumb structure.</p>
+      <p id="blend-note" class="hidden"></p>
     </section>
 
-    <div class="divider" data-mode="both"></div>
+    <div class="divider"></div>
 
-    <!-- ── STEPS 1–3 (both modes) ── -->
+    <!-- ── STEPS 1–3 ── -->
 
-    <section class="section" id="step1" data-mode="both">
+    <section class="section" id="step1">
       <div class="section-num">Step 1 · ~24 hours before baking</div>
       <h2>The pre-ferment</h2>
-      <p>Combine 20 g sourdough starter with 40 g flour and 40 g water in your levain jar. Mix well, cover loosely, and leave at room temperature. This produces roughly <span data-qty="levain">83</span> g of levain by mixing time.</p>
-      <p>After mixing the levain, feed your starter by mixing 20 g each of flour and water back into the remaining starter in the jar. This gives you more than you took out, even allowing for wastage.</p>
+      <p id="levain-build-text"></p>
+      <div class="callout">
+        <div class="callout-title">Not enough starter?</div>
+        <p>Use what you have and keep the flour and water the same. The levain will just take a bit longer to become ripe and bubbly — give it a few extra hours.</p>
+      </div>
+      <p id="starter-feed-text"></p>
       <h3 id="starter-care">Starter care</h3>
       <p>Keep starter in a clean glass jar in the fridge. Whenever you bake, replace what you use by mixing equal parts flour and water back into the jar. Feed weekly if baking less than once a week — discard a tablespoon and mix in 20 g each of flour and water.</p>
       <p>For absences over two weeks, make a stiff dry levain (twice as much flour as water), freeze it. To revive, leave at room temperature until thawed then feed with equal parts flour and water. It should be active within 24 hours.</p>
     </section>
 
-    <section class="section" id="step2" data-mode="both">
+    <section class="section" id="step2">
       <div class="section-num">Step 2 · ~12–14 hours before baking</div>
       <h2>Mixing the dough</h2>
-      <p>Add ingredients to your bowl in this order:</p>
+      <div class="bowl-pick" data-picker></div>
+      <p id="mix-intro">Add ingredients to your bowl in this order:</p>
       <ol class="step-list">
-        <li><span class="step-num">1</span><span class="step-text">Measure out <strong><span data-qty="levain">83</span> g of levain</strong> into your mixing bowl</span></li>
-        <li><span class="step-num">2</span><span class="step-text">Add <strong><span data-qty="water">346</span> g water</strong></span></li>
-        <li><span class="step-num">3</span><span class="step-text">Add <strong><span data-qty="salt">11</span> g salt</strong></span></li>
-        <li><span class="step-num">4</span><span class="step-text">Mix for 15 seconds using a chopstick, dough whisk or fork</span></li>
-        <li><span class="step-num">5</span><span class="step-text">Add <strong><span data-qty="flour">511</span> g flour</strong></span></li>
-        <li><span class="step-num">6</span><span class="step-text">Mix with dough whisk or wooden spoon for 45–60 seconds</span></li>
-        <li><span class="step-num">7</span><span class="step-text">Wet your hands and bowl scraper. Cut through any dry patches and combine into a homogenous mass</span></li>
-        <li><span class="step-num">8</span><span class="step-text">Cover with food wrap or towel and leave on benchtop</span></li>
+        <li>Measure out <span class="q" data-q="levain"></span> of levain into your mixing bowl</li>
+        <li>Add <span class="q" data-q="water"></span> water</li>
+        <li>Add <span class="q" data-q="salt"></span> salt</li>
+        <li>Mix for 15 seconds using a chopstick, dough whisk or fork</li>
+        <li>Add <span class="q" data-q="flour"></span> flour<span data-q="flour-blend"></span></li>
+        <li>Mix with dough whisk or wooden spoon for 45–60 seconds</li>
+        <li>Wet your hands and bowl scraper. Cut through any dry patches and combine into a homogenous mass</li>
+        <li>Cover with food wrap or towel and leave on benchtop</li>
       </ol>
       <div class="callout tip">
         <div class="callout-title">No kneading required</div>
@@ -390,50 +342,42 @@ body {
       </div>
     </section>
 
-    <section class="section" id="step3" data-mode="both">
+    <section class="section" id="step3">
       <div class="section-num">Step 3 · During the 1.5–2 hours after mixing</div>
       <h2>Bulk fermentation</h2>
       <div class="callout">
         <div class="callout-title">Adding mix-ins</div>
-        <p>If adding olives, toasted walnuts or other mix-ins, incorporate them during the second stretch and fold. This works for both loaves and baguettes.</p>
+        <p id="mixin-text"></p>
       </div>
       <h3 id="stretch-fold">Stretch and fold</h3>
-      <a class="video-link" href="https://youtu.be/iFTlXqUSjQE" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Watch: Stretch &amp; fold technique
-      </a>
+      <a class="video-link" href="https://youtu.be/iFTlXqUSjQE" target="_blank" rel="noopener">▶ Watch: Stretch &amp; fold technique</a>
       <p>Once every 30–45 minutes, for a total of 3 sets:</p>
       <ol class="step-list">
-        <li><span class="step-num">1</span><span class="step-text">Wet your hands and bowl scraper</span></li>
-        <li><span class="step-num">2</span><span class="step-text">Pinch the side of the dough, stretch away from the mass, fold to the opposite side</span></li>
-        <li><span class="step-num">3</span><span class="step-text">Rotate bowl 90° and repeat — 4 folds in total</span></li>
-        <li><span class="step-num">4</span><span class="step-text">Cover the bowl again</span></li>
+        <li>Wet your hands and bowl scraper</li>
+        <li>Pinch the side of the dough, stretch away from the mass, fold to the opposite side</li>
+        <li>Rotate bowl 90° and repeat — 4 folds in total</li>
+        <li>Cover the bowl again</li>
       </ol>
       <p>Timing is flexible. You can refrigerate the bowl for 8–10 hours and take it out ~2 hours before shaping.</p>
     </section>
 
-    <!-- ── STEP 4 LOAF ── -->
+    <!-- ── STEP 4–5 LOAF ── -->
     <section class="section" id="step4" data-mode="loaf">
       <div class="section-num">Step 4 · After last stretch and fold</div>
       <h2>Shaping the dough</h2>
       <p>Leave covered for another 1.5–2 hours. The dough should have risen ~50–75% and feel airy. Lightly flour a clean benchtop, your hands and the scraper.</p>
       <h3 id="divide-preshape">Divide and pre-shape</h3>
-      <a class="video-link" href="https://youtu.be/6lGx_9yPpY4" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Watch: Divide &amp; pre-shape
-      </a>
+      <a class="video-link" href="https://youtu.be/6lGx_9yPpY4" target="_blank" rel="noopener">▶ Watch: Divide &amp; pre-shape</a>
+      <p data-divide></p>
       <p>Gently take a quarter of the dough, stretch it slightly and fold to the opposite side. Repeat three more times to form a rough ball. Turn so the floured side is on top. Dust lightly and rest 15–20 minutes.</p>
       <h3 id="final-shape">Final shape</h3>
-      <a class="video-link" href="https://youtu.be/9hed4WOOOiA" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Watch: Final shaping
-      </a>
+      <a class="video-link" href="https://youtu.be/9hed4WOOOiA" target="_blank" rel="noopener">▶ Watch: Final shaping</a>
       <ol class="step-list">
-        <li><span class="step-num">1</span><span class="step-text">Flour hands and scraper. Dust banneton with rice flour</span></li>
-        <li><span class="step-num">2</span><span class="step-text">Flip dough over. Fold two opposite sides into the middle to create a rectangular shape</span></li>
-        <li><span class="step-num">3</span><span class="step-text">Roll up like rolling carpet to create a cylinder</span></li>
-        <li><span class="step-num">4</span><span class="step-text">Drag the cylinder across the benchtop to build surface tension</span></li>
-        <li><span class="step-num">5</span><span class="step-text">Dust with rice flour and flip into banneton. Cover and refrigerate 4–12 hours</span></li>
+        <li>Flour hands and scraper. Dust banneton with rice flour</li>
+        <li>Flip dough over. Fold two opposite sides into the middle to create a rectangular shape</li>
+        <li>Roll up like rolling carpet to create a cylinder</li>
+        <li>Drag the cylinder across the benchtop to build surface tension</li>
+        <li>Dust with rice flour and flip into banneton. Cover and refrigerate 4–12 hours</li>
       </ol>
       <div class="callout tip">
         <div class="callout-title">Shaping tips</div>
@@ -441,45 +385,42 @@ body {
       </div>
     </section>
 
-    <!-- ── STEP 5 LOAF ── -->
     <section class="section" id="step5" data-mode="loaf">
       <div class="section-num">Step 5 · Baking day</div>
       <h2>Baking the loaf</h2>
       <ol class="step-list">
-        <li><span class="step-num">1</span><span class="step-text">At least 30 minutes before baking, place baking dish and lid in oven (lid open) and preheat to maximum (up to 250°C)</span></li>
-        <li><span class="step-num">2</span><span class="step-text">5 minutes before baking, take banneton from fridge. Cut baking paper to size for a cradle</span></li>
-        <li><span class="step-num">3</span><span class="step-text">Sprinkle dough with rice flour. Place paper cradle over banneton, flip, remove banneton</span></li>
-        <li><span class="step-num">4</span><span class="step-text">Wet razor blade. Score — roughly 5 mm deep at 45° to the dough, parallel to the long axis</span></li>
-        <li><span class="step-num">5</span><span class="step-text">Lower loaf into hot baking dish using paper as a cradle. Close lid</span></li>
-        <li><span class="step-num">6</span><span class="step-text">Bake at maximum heat for 20 minutes with lid on</span></li>
-        <li><span class="step-num">7</span><span class="step-text">Remove lid (and paper if possible). Reduce to 220°C. Bake further 20–25 minutes until deep golden</span></li>
-        <li><span class="step-num">8</span><span class="step-text">Cool on rack for at least 1 hour before slicing</span></li>
+        <li>At least 30 minutes before baking, place baking dish and lid in oven (lid open) and preheat to maximum (up to 250°C)</li>
+        <li>5 minutes before baking, take banneton from fridge. Cut baking paper to size for a cradle</li>
+        <li>Sprinkle dough with rice flour. Place paper cradle over banneton, flip, remove banneton</li>
+        <li>Wet razor blade. Score — roughly 5 mm deep at 45° to the dough, parallel to the long axis</li>
+        <li>Lower loaf into hot baking dish using paper as a cradle. Close lid</li>
+        <li>Bake at maximum heat for 20 minutes with lid on</li>
+        <li>Remove lid (and paper if possible). Reduce to 220°C. Bake further 20–25 minutes until deep golden</li>
+        <li>Cool on rack for at least 1 hour before slicing</li>
       </ol>
       <div class="callout tip">
         <div class="callout-title">Why the lid matters</div>
         <p>Steam is the key — the loaf rises before the crust sets. The lid traps steam from the dough itself. Don't cut for at least an hour — escaping steam makes the crumb gummy.</p>
       </div>
-      <p style="font-size:22px;margin-top:28px;color:var(--rust);font-style:italic">Good luck! 🍞</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:24px;margin-top:28px;color:var(--accent-text);font-style:italic">Good luck! 🍞</p>
     </section>
 
-    <!-- ── STEP 4 BAGUETTE ── -->
+    <!-- ── STEP 4–5 BAGUETTE ── -->
     <section class="section" id="step4b" data-mode="baguette">
       <div class="section-num">Step 4 · After last stretch and fold</div>
       <h2>Shaping baguettes</h2>
       <p>Leave covered 1.5–2 hours after the last fold. Dough should have risen ~50–75%. Lightly flour a clean benchtop, your hands and the scraper.</p>
       <h3>Divide and pre-shape</h3>
-      <a class="video-link" href="https://youtu.be/6lGx_9yPpY4" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Watch: Divide &amp; pre-shape
-      </a>
+      <a class="video-link" href="https://youtu.be/6lGx_9yPpY4" target="_blank" rel="noopener">▶ Watch: Divide &amp; pre-shape</a>
+      <p data-divide></p>
       <p>Use your scraper (and scales for accuracy) to divide the dough into equal portions. Shape each into a rough cylinder by folding the sides in. Dust with flour and rest 15–20 minutes.</p>
       <h3>Final shape</h3>
       <ol class="step-list">
-        <li><span class="step-num">1</span><span class="step-text">Dust couche generously with rice flour or semolina. Place on a large tray and create wave-like folds — baguettes will proof in these</span></li>
-        <li><span class="step-num">2</span><span class="step-text">Flip cylinder over. Flatten into a rectangle. Fold the long side to two-thirds and seal with flat hand. Fold remaining third to make a cigar shape</span></li>
-        <li><span class="step-num">3</span><span class="step-text">Flour hands well. From the middle, roll baguette back and forth, increasing pressure toward the ends to elongate</span></li>
-        <li><span class="step-num">4</span><span class="step-text">Dust generously with semolina or rice flour and place in a fold of the couche</span></li>
-        <li><span class="step-num">5</span><span class="step-text">Cover with kitchen towel and refrigerate 4–12 hours. Avoid very long proofs — baguettes are more delicate than loaves</span></li>
+        <li>Dust couche generously with rice flour or semolina. Place on a large tray and create wave-like folds — baguettes will proof in these</li>
+        <li>Flip cylinder over. Flatten into a rectangle. Fold the long side to two-thirds and seal with flat hand. Fold remaining third to make a cigar shape</li>
+        <li>Flour hands well. From the middle, roll baguette back and forth, increasing pressure toward the ends to elongate</li>
+        <li>Dust generously with semolina or rice flour and place in a fold of the couche</li>
+        <li>Cover with kitchen towel and refrigerate 4–12 hours. Avoid very long proofs — baguettes are more delicate than loaves</li>
       </ol>
       <div class="callout tip">
         <div class="callout-title">Shaping tips</div>
@@ -487,190 +428,215 @@ body {
       </div>
     </section>
 
-    <!-- ── STEP 5 BAGUETTE ── -->
     <section class="section" id="step5b" data-mode="baguette">
       <div class="section-num">Step 5 · Baking day</div>
       <h2>Baking baguettes</h2>
       <ol class="step-list">
-        <li><span class="step-num">1</span><span class="step-text">Preheat oven to maximum (up to 250°C) at least 30 minutes before baking. Place a heavy pan (cast iron ideal) on the oven floor</span></li>
-        <li><span class="step-num">2</span><span class="step-text">5 minutes before baking, take couche from fridge</span></li>
-        <li><span class="step-num">3</span><span class="step-text">Cover tray with baking paper, sprinkle with rice flour or semolina</span></li>
-        <li><span class="step-num">4</span><span class="step-text">Carefully transfer baguettes to tray — maximum 3 per standard tray</span></li>
-        <li><span class="step-num">5</span><span class="step-text">Score each baguette — roughly 5 mm deep at an almost horizontal angle, slightly off-centre, overlapping by about a third</span></li>
-        <li><span class="step-num">6</span><span class="step-text">Just before loading, pour boiling water over a towel in the hot pan to create steam. Optionally mist baguettes lightly with water</span></li>
-        <li><span class="step-num">7</span><span class="step-text">Bake at maximum heat with steam for at least 12 minutes</span></li>
-        <li><span class="step-num">8</span><span class="step-text">Vent or remove steam. Reduce to 220°C and bake a further 10–15 minutes until deep golden</span></li>
-        <li><span class="step-num">9</span><span class="step-text">Cool on rack for at least 40 minutes before cutting</span></li>
+        <li>Preheat oven to maximum (up to 250°C) at least 30 minutes before baking. Place a heavy pan (cast iron ideal) on the oven floor</li>
+        <li>5 minutes before baking, take couche from fridge</li>
+        <li>Cover tray with baking paper, sprinkle with rice flour or semolina</li>
+        <li>Carefully transfer baguettes to tray — maximum 3 per standard tray</li>
+        <li>Score each baguette — roughly 5 mm deep at an almost horizontal angle, slightly off-centre, overlapping by about a third</li>
+        <li>Just before loading, pour boiling water over a towel in the hot pan to create steam. Optionally mist baguettes lightly with water</li>
+        <li>Bake at maximum heat with steam for at least 12 minutes</li>
+        <li>Vent or remove steam. Reduce to 220°C and bake a further 10–15 minutes until deep golden</li>
+        <li>Cool on rack for at least 40 minutes before cutting</li>
       </ol>
       <div class="callout tip">
         <div class="callout-title">Steam is essential for baguettes</div>
         <p>Without steam the crust sets too early and you lose the characteristic open crumb and thin crackly crust. Keep steam going for the first 12–15 minutes.</p>
       </div>
-      <p style="font-size:22px;margin-top:28px;color:var(--rust);font-style:italic">Good luck! 🥖</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:24px;margin-top:28px;color:var(--accent-text);font-style:italic">Good luck! 🥖</p>
     </section>
 
   </main>
 </div>
 
+<script src="sourdough-core.js"></script>
 <script>
-// ── GUIDE MODE ────────────────────────────────────────────────────────────
-let guideMode = 'loaf';
-let urlPersonalised = false; // set to true if URL params were supplied
+// ── STATE ─────────────────────────────────────────────────────────────────
+const linked   = Sourdough.decodeRecipe(location.search);   // recipe from the calculator, or null
+let guideMode  = linked ? linked.type : 'loaf';
+let bowlIdx    = 0;
+let plan       = null;                                       // Sourdough.computeRecipe(...)
 
-// Default quantities per mode (no URL params)
-const DEFAULTS = {
-  loaf: {
-    totalFlour: '552', flour: '511', water: '346', salt: '11.0',
-    levain: '83', hyd_pct: '70',
-    intro: 'Default quantities for one white sourdough loaf — dough weight ~950 g, final loaf ~820 g. Open from the calculator to use your own quantities.',
-  },
-  baguette: {
-    totalFlour: '466', flour: '431', water: '291', salt: '9.3',
-    levain: '70', hyd_pct: '70',
-    intro: 'Default quantities for two plain baguettes — 400 g dough each, one bowl. Open from the calculator to use your own quantities.',
-  },
-};
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const g   = (v, salt) => `${Sourdough.fmt(v, salt)} g`;
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function unitWord(type, n) { return type === 'baguette' ? plural(n, 'baguette', 'baguettes') : plural(n, 'loaf', 'loaves'); }
+function listAnd(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
 
-function applyDefaults(m) {
-  if (urlPersonalised) return; // don't overwrite personalised values
-  const d = DEFAULTS[m];
-  document.querySelectorAll('[data-qty]').forEach(el => {
-    const key = el.dataset.qty;
-    if (d[key] !== undefined) {
-      el.textContent = d[key];
-      el.classList.remove('qty-live');
-      el.removeAttribute('title');
+// ── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const recipe = linked || Sourdough.defaultRecipe(guideMode);
+  plan = Sourdough.computeRecipe(recipe);
+  if (bowlIdx >= plan.bowls.length) bowlIdx = 0;
+  const bowl = plan.bowls[bowlIdx], r = bowl.result, type = recipe.type;
+  const multi = plan.bowls.length > 1;
+  const totalPieces = plan.bowls.reduce((s, b) => s + b.loaves, 0);
+
+  // Banner
+  const banner = document.getElementById('banner');
+  banner.classList.remove('hidden');
+  if (linked) {
+    const what = multi ? `${plan.bowls.length} bowls · ${unitWord(type, totalPieces)}` : unitWord(type, bowl.loaves);
+    const levs = [...new Set(plan.bowls.map(b => Math.round(b.levainPct * 100)))];
+    banner.innerHTML = `<strong>Your recipe</strong> · ${what} · ${Math.round(recipe.hyd * 100)}% hydration · ${(recipe.salt * 100).toFixed(1)}% salt · ${levs.map(l => l + '%').join('/')} levain`;
+  } else {
+    banner.innerHTML = `Showing the default recipe (${type === 'baguette' ? 'two 400 g baguettes' : 'one 950 g loaf'}). <a href="sourdough-calculator.html">Open the guide from the calculator</a> to see your own quantities.`;
+  }
+
+  // Ingredient intro
+  document.getElementById('ing-intro').innerHTML = linked
+    ? (multi ? `Quantities for your ${plan.bowls.length} bowls. You make one levain for the whole bake, then mix each bowl separately.`
+             : `Quantities for your recipe — ${unitWord(type, bowl.loaves)}${bowl.oneBowl || bowl.loaves === 1 ? '' : ', mixed one at a time'}, ${g(bowl.lwt)} each.`)
+    : `Default quantities for ${type === 'baguette' ? 'two plain baguettes (400 g dough each, one bowl)' : 'one white sourdough loaf (950 g dough; the baked loaf is about 820 g)'}.`;
+
+  // Levain build block
+  const B = plan.build;
+  document.getElementById('ing-levain').innerHTML = `
+    <div class="ing-block">
+      <h4>Levain — Step 1, the day before <span>${B.ratio} starter : flour : water</span></h4>
+      <table class="ing-table">
+        <tr><td>Sourdough starter<span class="note">Straight from the fridge</span></td><td class="amt">${B.starter}<small>g</small></td></tr>
+        <tr><td>White bread flour</td><td class="amt">${B.flour}<small>g</small></td></tr>
+        <tr><td>Water</td><td class="amt">${B.water}<small>g</small></td></tr>
+        <tr class="total"><td>Makes about<span class="note">You need ${g(plan.levainNeeded)}${multi ? ' across all bowls' : ''}; the rest allows for what sticks to the jar</span></td><td class="amt">${B.total}<small>g</small></td></tr>
+      </table>
+    </div>`;
+
+  // Bowl pickers
+  document.querySelectorAll('[data-picker]').forEach(el => {
+    el.classList.toggle('hidden', !multi);
+    if (!multi) { el.innerHTML = ''; return; }
+    el.innerHTML = `<span class="bowl-pick-lbl">Quantities for:</span>` +
+      plan.bowls.map((b, i) => `<button class="${i === bowlIdx ? 'active' : ''}" onclick="pickBowl(${i})">${esc(b.name)}</button>`).join('');
+  });
+
+  // Dough block for the selected bowl
+  const perPiece = !bowl.oneBowl && bowl.loaves > 1;
+  const split = r.split;
+  const rows = [
+    ['Levain', r.levain, 'From Step 1'],
+    ['Water', r.water, 'Room temperature, preferably bottled or filtered'],
+    ['Cooking salt', r.salt, '', true],
+    [split ? 'Flour' : 'White bread flour', r.flour, split ? '' : 'Wallaby brand recommended'],
+  ];
+  let doughRows = rows.map(([n, v, note, salt]) =>
+    `<tr><td>${n}${note ? `<span class="note">${note}</span>` : ''}</td><td class="amt">${Sourdough.fmt(v, salt)}<small>g</small></td></tr>`).join('');
+  if (split) {
+    [['White bread flour', split.white], ['Whole wheat flour', split.ww], ['Rye flour', split.rye]]
+      .filter(x => x[1] > 0).forEach(([n, v]) => { doughRows += `<tr class="sub"><td>${n}</td><td class="amt">${Sourdough.fmt(v)}<small>g</small></td></tr>`; });
+  }
+  r.mixins.forEach(m => { doughRows += `<tr><td>${esc(m.name)}<span class="note">Added at the second stretch and fold</span></td><td class="amt">${Sourdough.fmt(m.g)}<small>g</small></td></tr>`; });
+  doughRows += `<tr class="total"><td>Total dough</td><td class="amt">${Sourdough.fmt(r.totalDough)}<small>g</small></td></tr>`;
+  const doughTitle = perPiece ? `Dough — ${esc(bowl.name)}, for each ${type === 'baguette' ? 'baguette' : 'loaf'}`
+                              : `Dough — ${linked ? esc(bowl.name) : 'Step 2'}`;
+  const doughSub = perPiece ? `mix ${bowl.loaves} times` : unitWord(type, bowl.loaves);
+  document.getElementById('ing-dough').innerHTML = `
+    <div class="ing-block"><h4>${doughTitle} <span>${doughSub}</span></h4><table class="ing-table">${doughRows}</table></div>`;
+
+  // Shopping total: all flour incl. levain build, across all bowls
+  const flourAll = B.flour + plan.bowls.reduce((s, b) => s + b.result.flour * b.factor, 0);
+  document.getElementById('ing-shopping').innerHTML = `
+    <div class="ing-block"><table class="ing-table">
+      <tr><td>Total flour to have on hand<span class="note">Levain plus ${multi ? 'all bowls' : 'dough'}${recipe.blend ? ', all types' : ''}</span></td><td class="amt">${Sourdough.fmt(flourAll)}<small>g</small></td></tr>
+      <tr><td>Rice flour or coarse semolina<span class="note">For dusting the ${type === 'baguette' ? 'couche' : 'banneton'}</span></td><td class="amt text">as needed</td></tr>
+    </table></div>`;
+
+  // Jar size: levain roughly doubles
+  document.getElementById('jar-size').textContent = `at least ${Math.max(600, Math.ceil(B.total * 2.5 / 100) * 100)} ml`;
+
+  // Hydration note
+  const h = Math.round(recipe.hyd * 100);
+  const feel = h < 66 ? 'a stiffer dough, easy to handle and shape.'
+             : h <= 72 ? 'a good balance, not too sticky and reasonably easy to work.'
+             : h <= 78 ? 'a wetter dough — expect it to be stickier; wet hands help.'
+             : 'a high-hydration dough — very slack, so handle gently and rely on the folds for strength.';
+  document.getElementById('hyd-note').innerHTML = `This recipe is at <span class="q">${h}%</span> hydration: ${feel}`;
+
+  // Blend note
+  const bn = document.getElementById('blend-note');
+  bn.classList.toggle('hidden', !recipe.blend);
+  if (recipe.blend) {
+    const parts = [['white', recipe.blend.w], ['whole wheat', recipe.blend.ww], ['rye', recipe.blend.rye]].filter(x => x[1] > 0).map(x => `${x[1]}% ${x[0]}`);
+    bn.innerHTML = `This recipe uses a blend of ${listAnd(parts)}. Build the levain with white flour; the whole wheat and rye go into the dough, so the split in the dough flour is a little different from the blend percentages.`;
+  }
+
+  // Step 1: levain build and starter feed
+  document.getElementById('levain-build-text').innerHTML =
+    `Combine <span class="q">${g(B.starter)}</span> sourdough starter with <span class="q">${g(B.flour)}</span> flour and <span class="q">${g(B.water)}</span> water in your levain jar. Mix well, cover loosely, and leave at room temperature. By mixing time this gives about ${g(B.total)} of levain — you need ${g(plan.levainNeeded)}${multi ? ' for all your bowls' : ''}.`;
+  const feed = Math.max(20, Math.ceil(B.starter / 5) * 5);
+  document.getElementById('starter-feed-text').innerHTML =
+    `After mixing the levain, feed your starter by mixing <span class="q">${feed} g</span> each of flour and water back into the remaining starter in the jar. This gives you more than you took out, even allowing for wastage.`;
+
+  // Step 2: mixing quantities
+  document.getElementById('mix-intro').innerHTML = perPiece
+    ? `These quantities are for <strong>one ${type === 'baguette' ? 'baguette' : 'loaf'}</strong> — repeat ${bowl.loaves} times, or mix them all in one bowl (tick “Mix in one bowl” in the calculator). Add ingredients in this order:`
+    : (multi ? `For <strong>${esc(bowl.name)}</strong>, add ingredients in this order:` : 'Add ingredients to your bowl in this order:');
+  document.querySelectorAll('[data-q]').forEach(el => {
+    const k = el.dataset.q;
+    if (k === 'flour-blend') {
+      el.innerHTML = split ? ` (${listAnd([['white', split.white], ['whole wheat', split.ww], ['rye', split.rye]].filter(x => x[1] > 0).map(x => `${Sourdough.fmt(x[1])} g ${x[0]}`))})` : '';
+    } else {
+      el.textContent = g(r[k], k === 'salt');
     }
   });
-  const intro = document.getElementById('ing-intro');
-  if (intro) intro.textContent = d.intro;
+
+  // Step 3: mix-ins
+  document.getElementById('mixin-text').innerHTML = r.mixins.length
+    ? `Add ${listAnd(r.mixins.map(m => `<span class="q">${g(m.g)}</span> ${esc(m.name)}`))} during the second stretch and fold. This works for both loaves and baguettes.`
+    : 'If adding olives, toasted walnuts or other mix-ins (around 15% of the flour), incorporate them during the second stretch and fold. This works for both loaves and baguettes.';
+
+  // Step 4: dividing
+  const divideText = (bowl.oneBowl && bowl.loaves > 1)
+    ? `Divide the dough into <span class="q">${bowl.loaves} pieces of about ${g(r.totalDough / bowl.loaves)}</span> each — use your scales for even ${type === 'baguette' ? 'baguettes' : 'loaves'}.`
+    : '';
+  document.querySelectorAll('[data-divide]').forEach(el => { el.innerHTML = divideText; el.classList.toggle('hidden', !divideText); });
 }
 
+function pickBowl(i) { bowlIdx = i; render(); }
+
+// ── LOAF / BAGUETTE ───────────────────────────────────────────────────────
 function setGuideMode(m) {
   guideMode = m;
-  document.getElementById('tab-loaf').classList.toggle('active',     m === 'loaf');
+  document.getElementById('tab-loaf').classList.toggle('active', m === 'loaf');
   document.getElementById('tab-baguette').classList.toggle('active', m === 'baguette');
-
-  // Sections
-  document.querySelectorAll('.section[data-mode]').forEach(el => {
-    const dm = el.dataset.mode;
-    el.classList.toggle('hidden', dm !== 'both' && dm !== m);
-  });
-
-  // Callouts with data-mode
-  document.querySelectorAll('.callout[data-mode]').forEach(el => {
-    el.classList.toggle('hidden', el.dataset.mode !== m);
-  });
-
-  // Equipment list items with data-mode
-  document.querySelectorAll('.blist li[data-mode]').forEach(el => {
-    el.classList.toggle('hidden', el.dataset.mode !== m);
-  });
-
-  // Ingredient table baguette-only rows
-  document.querySelectorAll('.ing-table tr.baguette-only').forEach(el => {
-    el.classList.toggle('hidden', m !== 'baguette');
-  });
-
-  // Sidebar nav sections
-  document.querySelectorAll('.sidebar .nav-section[data-mode]').forEach(el => {
-    const dm = el.dataset.mode;
-    el.classList.toggle('hidden', dm !== 'both' && dm !== m);
-  });
-
-  // Dividers
-  document.querySelectorAll('.divider[data-mode]').forEach(el => {
-    el.classList.toggle('hidden', el.dataset.mode !== 'both' && el.dataset.mode !== m);
-  });
-
-  // Hero label and description
-  document.getElementById('hero-mode-label').textContent =
-    m === 'loaf' ? 'Loaf guide' : 'Baguette guide';
+  document.querySelectorAll('[data-mode]').forEach(el => el.classList.toggle('hidden', el.dataset.mode !== m));
+  document.getElementById('hero-mode-label').textContent = m === 'loaf' ? 'Loaf guide' : 'Baguette guide';
   document.getElementById('hero-desc').textContent = m === 'loaf'
     ? 'Everything you need to bake a great sourdough loaf — from your first levain to pulling a golden crust from the oven.'
     : 'The complete guide to baking sourdough baguettes — same principles as a loaf, with the specific shaping and baking steps for baguettes.';
-
-  applyDefaults(m);
+  render();
   updateNav();
 }
 
-// ── URL PARAM PERSONALISATION ─────────────────────────────────────────────
-(function() {
-  const p = new URLSearchParams(window.location.search);
-  const has = k => p.has(k) && p.get(k) !== '';
-  const keys = ['levain','water','salt','flour','totalFlour','hyd_pct','loaves','lwt','onebowl','bowl','mixins'];
-  const personalised = keys.some(k => has(k));
-
-  if (!personalised) {
-    document.getElementById('generic-note').style.display = 'block';
-  } else {
-    urlPersonalised = true;
-    if (p.get('type') === 'baguette') initialGuideMode = 'baguette';
-    const v = {};
-    keys.forEach(k => { if (has(k)) v[k] = p.get(k); });
-
-    document.querySelectorAll('[data-qty]').forEach(el => {
-      const key = el.dataset.qty;
-      if (v[key] !== undefined) {
-        el.textContent = v[key];
-        el.classList.add('qty-live');
-        el.title = 'From your recipe';
-      }
-    });
-
-    const loaves  = v.loaves || '1';
-    const lwt     = v.lwt    || '';
-    const onebowl = v.onebowl === '1';
-    const intro   = document.getElementById('ing-intro');
-    if (intro) {
-      const batchNote = onebowl
-        ? `${+loaves > 1 ? loaves + ' loaves' : '1 loaf'} mixed in one bowl`
-        : `per loaf (multiply ×${loaves} for the full bake)`;
-      intro.innerHTML = `Quantities for your recipe — <strong>${batchNote}${lwt ? ', '+lwt+' g target each' : ''}</strong>. Values in <span class="qty-live" style="border:none">rust</span> are personalised from your calculator.`;
-    }
-
-    const banner = document.getElementById('pers-banner');
-    const parts  = [];
-    if (v.levain)  parts.push(`<em>${v.levain} g</em> levain`);
-    if (v.water)   parts.push(`<em>${v.water} g</em> water`);
-    if (v.salt)    parts.push(`<em>${v.salt} g</em> salt`);
-    if (v.flour)   parts.push(`<em>${v.flour} g</em> flour`);
-    if (v.hyd_pct) parts.push(`<em>${v.hyd_pct}%</em> hydration`);
-    const loafDesc = onebowl
-      ? `${+loaves > 1 ? loaves + ' loaves' : '1 loaf'} · one bowl`
-      : `${+loaves > 1 ? loaves + ' loaves' : '1 loaf'}`;
-    banner.innerHTML = `📐 Personalised — ${loafDesc}${v.bowl ? ' · '+v.bowl : ''}: &nbsp;${parts.join(' · ')}`;
-    banner.style.display = 'block';
-  }
-})();
+// ── THEME (shared preference with the calculator) ─────────────────────────
+const THEMES = ['auto', 'light', 'dark'];
+const THEME_LABEL = { auto: 'Theme: Auto', light: 'Theme: Light', dark: 'Theme: Dark' };
+function currentTheme() { return document.documentElement.dataset.theme || 'auto'; }
+function applyTheme(t) {
+  if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  try { t === 'auto' ? localStorage.removeItem('theme') : localStorage.setItem('theme', t); } catch (e) {}
+  document.getElementById('theme-btn').textContent = THEME_LABEL[t];
+}
+function cycleTheme() { applyTheme(THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length]); }
 
 // ── ACTIVE NAV ON SCROLL ──────────────────────────────────────────────────
 function updateNav() {
-  const visible = [...document.querySelectorAll('.section[id]:not(.hidden)')];
-  const links   = [...document.querySelectorAll('.nav-link[href^="#"]')];
   let cur = '';
-  visible.forEach(s => { if (window.scrollY >= s.offsetTop - 90) cur = s.id; });
-  links.forEach(a => a.classList.toggle('active', a.getAttribute('href').slice(1) === cur));
+  document.querySelectorAll('.section[id]:not(.hidden)').forEach(s => { if (window.scrollY >= s.offsetTop - 90) cur = s.id; });
+  document.querySelectorAll('.nav-link[href^="#"]').forEach(a => a.classList.toggle('active', a.getAttribute('href').slice(1) === cur));
 }
-window.addEventListener('scroll', updateNav, { passive:true });
+window.addEventListener('scroll', updateNav, { passive: true });
+
+// Printing shows the full guide (both loaf and baguette steps)
+window.addEventListener('beforeprint', () => document.querySelectorAll('[data-mode]').forEach(el => el.classList.remove('hidden')));
+window.addEventListener('afterprint',  () => setGuideMode(guideMode));
 
 // ── INIT ──────────────────────────────────────────────────────────────────
-applyDefaults(initialGuideMode);
-setGuideMode(initialGuideMode);
-
-// ── PRINT ─────────────────────────────────────────────────────────────────
-function printGuide() {
-  // Temporarily show all hidden sections so the full guide prints
-  const hidden = document.querySelectorAll(
-    '.section.hidden, .callout.hidden, .ing-table tr.hidden, .blist li.hidden'
-  );
-  hidden.forEach(el => el.classList.remove('hidden'));
-
-  window.print();
-
-  // Restore mode after print dialog closes
-  setTimeout(() => setGuideMode(guideMode), 500);
-}
+applyTheme(currentTheme());
+setGuideMode(guideMode);
 </script>
 </body>
 </html>

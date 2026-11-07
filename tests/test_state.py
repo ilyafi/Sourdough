@@ -131,7 +131,7 @@ async def main():
         check('No redundant "Added flour" row', 'Added flour' not in t)
 
         href = await pg.get_attribute('#guide-link', 'href')
-        check('Guide link carries recipe numbers', 'levain=166' in href and 'water=691' in href, href[:90])
+        check('Guide link carries the recipe', href.startswith('guide.html?r='), href[:90])
 
         await b.close()
 
