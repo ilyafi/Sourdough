@@ -1,15 +1,14 @@
-"""Guide tests: the guide shows exactly the calculator's quantities, sizes the
-levain build correctly, shows only the right steps, and old links still work.
+"""Guide tests: the guide shows exactly the calculator's quantities (all bowls,
+all bread types including focaccia with olive oil), sizes the levain build
+correctly, shows only the right steps, and old links still work.
 
 Run:  python3 tests/test_guide.py          (exit code 1 on any failure)
 """
-import asyncio, math, random, sys
-from pathlib import Path
+import asyncio, json, random, sys
 from playwright.async_api import async_playwright
-from common import launch, PAGE
+from common import launch, PAGE, GUIDE, BASE
+from test_math import random_case
 
-GUIDE = PAGE.replace('sourdough-calculator.html', 'guide.html')
-BASE = PAGE.rsplit('/', 1)[0] + '/'
 random.seed(7)
 fails, checks = [], 0
 
@@ -18,108 +17,107 @@ def check(name, ok, detail=''):
     checks += 1
     if not ok: fails.append(f'{name}: {detail}')
 
-def n(v): return float(str(v).replace(',', '').replace('g', '').strip() or 0)
+def n(v):
+    v = str(v).replace(',', '').replace('g', '').replace('ml', '').replace('\u00a0', '').strip()
+    return 0.0 if v in ('', '–') else float(v)
 
-CALC_TABLE = """() => { const o = {}; document.querySelectorAll('.out-table tbody tr').forEach(r => {
+CALC = """() => { const o = {}; document.querySelectorAll('.out-table tbody tr').forEach(r => {
   const l = r.querySelector('td.col-lbl'); if (!l) return;
   o[l.textContent.trim()] = [...r.querySelectorAll('td.val')].map(t => t.textContent.replace(/\\s*g$/,'').trim()); });
-  o._factors = (mode === 'simple' ? bowls.map(b => document.getElementById('bowl-onebowl-'+b.id).checked ? 1 : rInt('bowl-loaves-'+b.id,1))
-                                  : advBowls.map(b => document.getElementById('ab-onebowl-'+b.id).checked ? 1 : rInt('ab-loaves-'+b.id,1)));
+  o._factors = plan.bowls.map(b => b.factor);
+  o._areas = plan.bowls.map(b => b.tray ? b.tray.area : 0);
+  o._oil = plan.recipe.oil;
   return o; }"""
 
 GUIDE_READ = """() => {
   const q = k => document.querySelector('#step2 [data-q="'+k+'"]').textContent;
-  const lev = [...document.querySelectorAll('#ing-levain td.amt')].map(t => t.textContent);
+  const vis = el => el && getComputedStyle(el).display !== 'none' && !el.closest('.hidden');
   const dough = {}; document.querySelectorAll('#ing-dough tr').forEach(r => {
-    const t = r.querySelector('td'); const a = r.querySelector('td.amt');
-    dough[t.childNodes[0].textContent.trim()] = a.textContent; });
-  return { levain: q('levain'), water: q('water'), salt: q('salt'), flour: q('flour'), build: lev, dough,
+    dough[r.querySelector('td').childNodes[0].textContent.trim()] = r.querySelector('td.amt').textContent; });
+  const trayOil = document.querySelector('#step4f [data-trayoil]');
+  return { levain: q('levain'), water: q('water'), salt: q('salt'), flour: q('flour'), oil: q('oil'),
+           oilStepShown: vis(document.querySelector('#step2 [data-oil]')),
+           build: [...document.querySelectorAll('#ing-levain td.amt')].map(t => t.textContent), dough,
            step1: document.getElementById('levain-build-text').textContent,
+           trayOil: trayOil ? trayOil.textContent : '',
+           shopping: document.getElementById('ing-shopping').textContent,
+           banner: document.getElementById('banner').textContent,
            visible: [...document.querySelectorAll('.section[id]')].filter(s => getComputedStyle(s).display !== 'none').map(s => s.id),
            pickers: document.querySelectorAll('#step2 [data-picker] button').length }; }"""
 
-async def set_val(pg, sel, v):
-    await pg.evaluate("([s,v]) => { document.querySelector(s).value = v; }", [sel, str(v)])
-
-async def random_calc(pg, i):
-    await pg.goto(PAGE)
-    advanced = i % 2 == 1
-    if not advanced:
-        await pg.evaluate(f"setStep({random.randint(0,2)})")
-        if random.random() < 0.4: await pg.evaluate("setBreadType('baguette')")
-        for _ in range(random.randint(0, 2)): await pg.evaluate("addBowl()")
-        for bid in await pg.evaluate("bowls.map(b=>b.id)"):
-            await set_val(pg, f'#bowl-loaves-{bid}', random.randint(1, 6))
-            await set_val(pg, f'#bowl-weight-{bid}', random.randint(250, 1500))
-            await pg.evaluate(f"document.getElementById('bowl-onebowl-{bid}').checked={str(random.random()<0.75).lower()}")
-    else:
-        await pg.evaluate("setMode('advanced')")
-        await set_val(pg, '#a-hyd', random.randint(60, 95)); await set_val(pg, '#a-salt', random.choice([1.8, 2, 2.2]))
-        await set_val(pg, '#a-starter', random.randint(8, 30))
-        w = random.choice([100, 80, 70]); ww = random.choice([0, 100 - w])
-        await set_val(pg, '#fb-white', w); await set_val(pg, '#fb-ww', ww); await set_val(pg, '#fb-rye', 100 - w - ww)
-        if random.random() < 0.6:
-            await pg.evaluate("addMixin()")
-            mid = (await pg.evaluate("advMx.slice()"))[0]
-            await pg.evaluate(f"mxVals[{mid}]={{name:'seeds',pct:'{random.choice([5,10,15])}'}}")
-        for _ in range(random.randint(0, 2)): await pg.evaluate("addAdvBowl()")
-        for bid in await pg.evaluate("advBowls.map(b=>b.id)"):
-            await set_val(pg, f'#ab-loaves-{bid}', random.randint(1, 5)); await set_val(pg, f'#ab-weight-{bid}', random.randint(300, 1800))
-            await pg.evaluate(f"document.getElementById('ab-onebowl-{bid}').checked={str(random.random()<0.75).lower()}")
-            if random.random() < 0.3:
-                await pg.evaluate(f"document.getElementById('ab-ovr-{bid}').checked=true")
-                await set_val(pg, f'#ab-ovr-val-{bid}', random.randint(8, 30))
-    await pg.evaluate("calc()")
-    return advanced
+STEPS = {'loaf': ['step4', 'step5'], 'baguette': ['step4b', 'step5b'], 'focaccia': ['step4f', 'step5f']}
 
 async def main():
     async with async_playwright() as p:
         b, pg, errs = await launch(p, viewport={'width': 1100, 'height': 900})
+        tray_oil = lambda area: pg.evaluate(f"Sourdough.trayOil({area})")
 
         # ── Calculator → guide: quantities match for every bowl ──
-        for i in range(40):
-            adv = await random_calc(pg, i)
-            calc = await pg.evaluate(CALC_TABLE)
-            btype = await pg.evaluate("mode==='simple' ? breadType : 'loaf'")
+        for i in range(60):
+            st, exp = random_case()
+            await pg.goto(PAGE)
+            await pg.evaluate(f"state = sanitize({json.dumps(st)}); renderAll(); calc();")
+            calc = await pg.evaluate(CALC)
             href = await pg.get_attribute('#guide-link', 'href')
-            await pg.goto(BASE + href); await pg.wait_for_timeout(50)
-            nb = len(calc['_factors'])
-            needed = 0
+            await pg.goto(BASE + href)
+            typ = exp['type']; nb = len(calc['_factors']); case = f'case{i} ({typ})'
             for col in range(nb):
                 if nb > 1: await pg.click(f'#step2 [data-picker] button:nth-of-type({col+1})')
                 gd = await pg.evaluate(GUIDE_READ)
-                case = f'case{i} ({"adv" if adv else "simple"}) bowl{col+1}'
-                for k, lbl in [('levain','Levain'), ('water','Water'), ('salt','Salt'), ('flour','Flour')]:
-                    check(f'{case} {k}', abs(n(gd[k]) - n(calc[lbl][col])) < 0.01, f'guide {gd[k]} vs calculator {calc[lbl][col]}')
-                check(f'{case} total dough', abs(n(gd['dough']['Total dough']) - n(calc['Total dough'][col])) < 0.01,
-                      f'guide {gd["dough"]["Total dough"]} vs calc {calc["Total dough"][col]}')
-                for k in ('White bread flour', 'Whole wheat flour', 'Rye flour'):
-                    calc_k = {'White bread flour': 'White', 'Whole wheat flour': 'Whole wheat', 'Rye flour': 'Rye'}[k]
-                    if calc_k in calc and n(calc[calc_k][col]) and k in gd['dough']:
-                        check(f'{case} {k}', abs(n(gd['dough'][k]) - n(calc[calc_k][col])) < 0.01, f'{gd["dough"][k]} vs {calc[calc_k][col]}')
-                if 'seeds' in calc:
-                    check(f'{case} mix-in', abs(n(gd['dough'].get('seeds', 0)) - n(calc['seeds'][col])) < 0.01, f'{gd["dough"].get("seeds")} vs {calc["seeds"][col]}')
-                needed += n(calc['Levain'][col]) * calc['_factors'][col]
-            # Levain build: 1:2:2, at least what's needed, roughly 10% margin
-            st, fl, wa, tot = [n(x) for x in gd['build']]
-            check(f'case{i} build ratio', abs(fl - 2*st) <= 2 and fl == wa, f'{st}:{fl}:{wa}')
-            check(f'case{i} build covers all bowls', tot >= needed * 1.09 and tot <= needed * 1.10 + 5,
-                  f'build {tot} g for {needed} g needed')
-            check(f'case{i} step 1 text uses build', f'{int(st)} g' in gd['step1'] and f'{int(fl)} g' in gd['step1'], gd['step1'][:80])
-            want = ['step4b', 'step5b'] if btype == 'baguette' else ['step4', 'step5']
-            other = ['step4', 'step5'] if btype == 'baguette' else ['step4b', 'step5b']
-            check(f'case{i} correct steps shown', all(s in gd['visible'] for s in want) and not any(s in gd['visible'] for s in other), gd['visible'])
-            check(f'case{i} bowl picker', (gd['pickers'] == nb) if nb > 1 else gd['pickers'] == 0, f'{gd["pickers"]} buttons for {nb} bowls')
+                c = f'{case} bowl{col+1}'
+                for k, lbl in [('levain', 'Levain'), ('water', 'Water'), ('salt', 'Salt'), ('flour', 'Flour')]:
+                    check(f'{c} {k}', abs(n(gd[k]) - n(calc[lbl][col])) < 0.01, f'guide {gd[k]} vs calculator {calc[lbl][col]}')
+                check(f'{c} total dough', abs(n(gd['dough']['Total dough']) - n(calc['Total dough'][col])) < 0.01, (gd['dough'], calc['Total dough'][col]))
+                if calc['_oil']:
+                    check(f'{c} oil', abs(n(gd['oil']) - n(calc['Olive oil'][col])) < 0.01 and abs(n(gd['dough'].get('Olive oil', 0)) - n(calc['Olive oil'][col])) < 0.01, (gd['oil'], calc['Olive oil'][col]))
+                    check(f'{c} oil step shown', gd['oilStepShown'])
+                else:
+                    check(f'{c} no oil step', not gd['oilStepShown'] and 'Olive oil' not in gd['dough'])
+                for gk, ck in (('White bread flour', 'White'), ('Whole wheat flour', 'Whole wheat'), ('Rye flour', 'Rye')):
+                    if ck in calc and n(calc[ck][col]):
+                        check(f'{c} {gk}', abs(n(gd['dough'].get(gk, 0)) - n(calc[ck][col])) < 0.01, (gd['dough'].get(gk), calc[ck][col]))
+                for name in (k for k in calc if k.startswith('mx')):
+                    if n(calc[name][col]): check(f'{c} {name}', abs(n(gd['dough'].get(name, 0)) - n(calc[name][col])) < 0.01)
+                if typ == 'focaccia':
+                    o = await tray_oil(calc['_areas'][col])
+                    check(f'{c} tray oil', f"{o['ml']} ml" in gd['trayOil'], (gd['trayOil'], o))
+            needed = sum(n(calc['Levain'][col]) * f for col, f in enumerate(calc['_factors']))
+            st_, fl, wa, tot = [n(x) for x in gd['build']]
+            check(f'{case} build ratio', abs(fl - 2 * st_) <= 2 and fl == wa, f'{st_}:{fl}:{wa}')
+            check(f'{case} build covers all bowls', needed * 1.09 <= tot <= needed * 1.10 + 5, f'{tot} for {needed}')
+            check(f'{case} step 1 text', f'{int(st_)} g' in gd['step1'] and f'{int(fl)} g' in gd['step1'], gd['step1'][:80])
+            want, other = STEPS[typ], [s for t, ss in STEPS.items() if t != typ for s in ss]
+            check(f'{case} correct steps', all(s in gd['visible'] for s in want) and not any(s in gd['visible'] for s in other), gd['visible'])
+            check(f'{case} bowl picker', gd['pickers'] == (nb if nb > 1 else 0), f'{gd["pickers"]} for {nb}')
+            if typ == 'focaccia':
+                check(f'{case} tray oil in shopping list', 'Olive oil for the tray' in gd['shopping'] and 'Rice flour' not in gd['shopping'])
 
-        # ── Guide opened directly ──
-        for mode, steps, notsteps, lev in [('loaf', ['step4','step5'], ['step4b','step5b'], 83), ('baguette', ['step4b','step5b'], ['step4','step5'], 70)]:
+        # ── Guide opened directly: each tab ──
+        for tab, lev in (('loaf', 83), ('baguette', 70), ('focaccia', 71)):
             await pg.goto(GUIDE)
-            if mode == 'baguette': await pg.click('#tab-baguette')
+            await pg.click(f'#tab-{tab}')
             gd = await pg.evaluate(GUIDE_READ)
-            check(f'default {mode}: steps', all(s in gd['visible'] for s in steps) and not any(s in gd['visible'] for s in notsteps), gd['visible'])
-            check(f'default {mode}: levain', n(gd['levain']) == lev, gd['levain'])
+            check(f'default {tab}: steps', all(s in gd['visible'] for s in STEPS[tab]) and sum(s in gd['visible'] for t in STEPS for s in STEPS[t]) == 2, gd['visible'])
+            check(f'default {tab}: levain', n(gd['levain']) == lev, gd['levain'])
+        o = await tray_oil(759)
+        check('default focaccia tray oil', f"{o['ml']} ml" in gd['trayOil'], gd['trayOil'])
+        await pg.goto(GUIDE + '#focaccia')
+        check('#focaccia opens the focaccia tab', 'active' in await pg.get_attribute('#tab-focaccia', 'class'))
 
-        # ── Old-style guide link (bookmarks made before this change) ──
+        # ── Switching tab away from a linked recipe ──
+        await pg.goto(PAGE)
+        await pg.evaluate("state = sanitize({type:'focaccia', bowls:[{counts:{focaccia:'3'}}]}); renderAll(); calc();")
+        await pg.goto(BASE + await pg.get_attribute('#guide-link', 'href'))
+        gd = await pg.evaluate(GUIDE_READ)
+        check('linked focaccia shows "Your recipe"', 'Your recipe' in gd['banner'] and '3 trays' in gd['banner'], gd['banner'])
+        await pg.click('#tab-loaf')
+        gd = await pg.evaluate(GUIDE_READ)
+        check('other tab shows default with a way back', n(gd['levain']) == 83 and 'Back to your focaccia recipe' in gd['banner'], gd['banner'])
+        await pg.click('#banner a')
+        gd = await pg.evaluate(GUIDE_READ)
+        check('back link returns to linked recipe', 'Your recipe' in gd['banner'] and 'step4f' in gd['visible'])
+
+        # ── Old-style guide links (bookmarks made before the shared maths) ──
         await pg.goto(GUIDE + '?levain=166&water=691&salt=22.1&flour=1022&totalFlour=1105&hyd_pct=70&loaves=2&lwt=950&onebowl=1&bowl=Bowl+1&mixins=&type=loaf')
         gd = await pg.evaluate(GUIDE_READ)
         check('legacy link quantities', (n(gd['levain']), n(gd['water']), n(gd['flour'])) == (166, 691, 1022), gd)
@@ -127,10 +125,16 @@ async def main():
         gd = await pg.evaluate(GUIDE_READ)
         check('legacy baguette link', 'step4b' in gd['visible'] and n(gd['levain']) == 140, gd)
 
-        # ── Garbage link falls back to defaults without errors ──
-        await pg.goto(GUIDE + '?r=%7Bnot-json')
+        # ── Links made before focaccia existed (no oil / tray fields) ──
+        await pg.goto(GUIDE + '?r=' + json.dumps({"t": "loaf", "h": 70, "s": 2, "b": [["Plain", 2, 950, 1, 15, []]]}))
         gd = await pg.evaluate(GUIDE_READ)
-        check('bad link falls back to default', n(gd['levain']) == 83, gd['levain'])
+        check('pre-focaccia ?r= link', n(gd['levain']) == 166 and not gd['oilStepShown'], gd)
+
+        # ── Garbage links fall back to defaults without errors ──
+        for q in ('?r=%7Bnot-json', '?r=' + json.dumps({"t": "focaccia", "b": []})):
+            await pg.goto(GUIDE + q)
+            gd = await pg.evaluate(GUIDE_READ)
+            check(f'bad link {q[:20]} → default', n(gd['levain']) in (83, 71), gd['levain'])
 
         await b.close()
     fails.extend(f'JS error: {e}' for e in errs)

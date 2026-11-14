@@ -2,9 +2,9 @@
 
 Automated checks for `sourdough-calculator.html`. They open the real page in headless Chrome, so they test exactly what people use.
 
-- **test_math.py**: 120 random Simple and 120 random Advanced recipes. Every ingredient is checked against an independent baker's-percentage calculation, and hydration, salt and levain are recovered from the displayed grams. Also checks flour blend splits (% of total flour) and the "All bowls" full-bake column.
-- **test_guide.py**: builds random recipes in the calculator, follows its guide link and checks the guide shows the same quantities for every bowl, a correctly sized levain build, and only the right loaf/baguette steps. Also checks old-style guide links and the default (no link) guide.
-- **test_state.py**: interaction checks. Mix-ins survive adding/removing bowls and switching bread type, labels match the mode, blank inputs fall back sensibly, and the guide link carries the recipe.
+- **test_math.py**: 300 random recipes across loaf, baguette and focaccia, Simple and Advanced: trays and thickness, olive oil, flour blends, mix-ins and per-bowl levain. Every ingredient is checked against an independent baker's-percentage calculation, plus blend splits (% of total flour) and the "All bowls" full-bake column.
+- **test_guide.py**: builds random recipes in the calculator, follows its guide link and checks the guide shows the same quantities for every bowl (including olive oil and tray oil for focaccia), a correctly sized levain build, and only the right steps for the bread type. Also checks each tab's default recipe, old-style guide links and broken links.
+- **test_state.py**: interaction checks driven like a person would: mix-ins survive re-renders, focaccia trays (presets, custom, saved trays) and thickness, olive oil, the page remembering the last bake after a reload, saving/loading/replacing/deleting named recipes, no sideways scrolling on a phone, and the page still working when browser storage is blocked or corrupt.
 
 ## Run
 

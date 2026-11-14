@@ -194,6 +194,7 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
     <div class="mode-tabs" role="tablist">
       <button class="mode-tab active" id="tab-loaf"     onclick="setGuideMode('loaf')">🍞 Loaf</button>
       <button class="mode-tab"        id="tab-baguette" onclick="setGuideMode('baguette')">🥖 Baguette</button>
+      <button class="mode-tab"        id="tab-focaccia" onclick="setGuideMode('focaccia')">🫓 Focaccia</button>
     </div>
   </div>
   <div class="topnav-right">
@@ -232,6 +233,11 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
       <a class="nav-link" href="#step4b">4. Shaping baguettes</a>
       <a class="nav-link" href="#step5b">5. Baking baguettes</a>
     </div>
+    <div class="nav-section" data-mode="focaccia">
+      <div class="nav-section-title">Focaccia</div>
+      <a class="nav-link" href="#step4f">4. Into the tray</a>
+      <a class="nav-link" href="#step5f">5. Baking focaccia</a>
+    </div>
   </aside>
 
   <main class="content">
@@ -255,11 +261,13 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
         <li>A chopstick</li>
         <li>Bowl scraper (semi-circular)</li>
         <li>Clean glass or plastic jar — your levain jar (<span id="jar-size">min 600 ml</span>)</li>
-        <li>Razor blade (lame) or sharp knife</li>
+        <li data-mode="loaf baguette">Razor blade (lame) or sharp knife</li>
         <li data-mode="loaf">A banneton, bowl or basket · lint-free cloth if banneton is not cloth-lined</li>
         <li data-mode="loaf">A dutch oven, baking stone with lid, or other suitable baking dish</li>
         <li data-mode="baguette">Bakers couche (proofing cloth) or a clean floured pillow case</li>
         <li data-mode="baguette">Large flat baking tray</li>
+        <li data-mode="focaccia">A metal baking tray or tin, at least 3 cm deep (a dark or non-stick one browns the base best)</li>
+        <li data-mode="focaccia">Olive oil for the tray and the top · flaky sea salt · toppings you like (rosemary, olives, cherry tomatoes)</li>
         <li>Baking paper · Cling wrap or shower cap · Oven-proof gloves · Cooling rack</li>
       </ul>
       <div class="callout tip">
@@ -326,6 +334,7 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
         <li>Measure out <span class="q" data-q="levain"></span> of levain into your mixing bowl</li>
         <li>Add <span class="q" data-q="water"></span> water</li>
         <li>Add <span class="q" data-q="salt"></span> salt</li>
+        <li data-oil>Add <span class="q" data-q="oil"></span> olive oil</li>
         <li>Mix for 15 seconds using a chopstick, dough whisk or fork</li>
         <li>Add <span class="q" data-q="flour"></span> flour<span data-q="flour-blend"></span></li>
         <li>Mix with dough whisk or wooden spoon for 45–60 seconds</li>
@@ -449,6 +458,43 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
       <p style="font-family:'Cormorant Garamond',serif;font-size:24px;margin-top:28px;color:var(--accent-text);font-style:italic">Good luck! 🥖</p>
     </section>
 
+    <!-- ── STEP 4–5 FOCACCIA ── -->
+    <section class="section" id="step4f" data-mode="focaccia">
+      <div class="section-num">Step 4 · After last stretch and fold</div>
+      <h2>Into the tray</h2>
+      <p>Leave covered for another 1.5–2 hours. The dough should have risen ~50–75% and look bubbly.</p>
+      <p data-divide></p>
+      <ol class="step-list">
+        <li>Pour <span class="q" data-trayoil></span> of olive oil into <span data-eachtray>the</span> tray and spread it over the base and sides. For easy removal, line the tray with baking paper first and oil the paper</li>
+        <li>Tip the dough into the tray and turn it over once so both sides are coated in oil</li>
+        <li>With oiled fingers, gently stretch the dough towards the corners. If it springs back, cover and rest 15–20 minutes, then stretch again — don't force it</li>
+        <li>Cover and let it rise until puffy and jiggly: 2–4 hours at room temperature, or refrigerate overnight (8–16 hours) and take it out 1–2 hours before baking</li>
+      </ol>
+      <div class="callout tip">
+        <div class="callout-title">Overnight is worth it</div>
+        <p>A night in the fridge gives more flavour and bigger bubbles, and the dough is easier to dimple. It will keep spreading to fill the tray as it rests.</p>
+      </div>
+    </section>
+
+    <section class="section" id="step5f" data-mode="focaccia">
+      <div class="section-num">Step 5 · Baking day</div>
+      <h2>Baking the focaccia</h2>
+      <ol class="step-list">
+        <li>At least 30 minutes before baking, preheat the oven to 230°C (210°C fan) with a rack in the lower third</li>
+        <li>Drizzle 1–2 tablespoons of olive oil over the top. Oil your fingertips and press straight down to the bottom of the tray all over, making deep dimples</li>
+        <li>Add toppings and press them into the dimples. For garlic, use garlic-infused oil or push slices well down into the dimples — garlic left on top burns</li>
+        <li>Bake for 20–25 minutes until deep golden on top</li>
+        <li>Check the underside by lifting a corner with a spatula. If it's pale, slide the focaccia out of the tray (on its paper if you used it) straight onto the oven rack for another 3–5 minutes</li>
+        <li>Brush with a little more oil and sprinkle with flaky salt while it's hot</li>
+        <li>Move to a cooling rack, out of the tray, so the base stays crisp. Cool for at least 15 minutes before cutting</li>
+      </ol>
+      <div class="callout tip">
+        <div class="callout-title">Freezing</div>
+        <p>Focaccia freezes well. Cool completely, cut into portions and freeze uncovered until solid, then bag. Reheat from frozen at 180°C for 8–10 minutes.</p>
+      </div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:24px;margin-top:28px;color:var(--accent-text);font-style:italic">Good luck! 🫓</p>
+    </section>
+
   </main>
 </div>
 
@@ -456,19 +502,23 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
 <script>
 // ── STATE ─────────────────────────────────────────────────────────────────
 const linked   = Sourdough.decodeRecipe(location.search);   // recipe from the calculator, or null
-let guideMode  = linked ? linked.type : 'loaf';
+let guideMode  = linked ? linked.type : (['loaf', 'baguette', 'focaccia'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'loaf');
 let bowlIdx    = 0;
 let plan       = null;                                       // Sourdough.computeRecipe(...)
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const g   = (v, salt) => `${Sourdough.fmt(v, salt)} g`;
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-function unitWord(type, n) { return type === 'baguette' ? plural(n, 'baguette', 'baguettes') : plural(n, 'loaf', 'loaves'); }
+const UNITS = { loaf: ['loaf', 'loaves'], baguette: ['baguette', 'baguettes'], focaccia: ['tray', 'trays'] };
+function unitWord(type, n) { return plural(n, ...(UNITS[type] || UNITS.loaf)); }
+const pieceWord = type => (UNITS[type] || UNITS.loaf)[0];
 function listAnd(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
 
 // ── RENDER ────────────────────────────────────────────────────────────────
 function render() {
-  const recipe = linked || Sourdough.defaultRecipe(guideMode);
+  // The linked recipe shows on its own tab; other tabs show that type's default recipe
+  const mine = linked && linked.type === guideMode;
+  const recipe = mine ? linked : Sourdough.defaultRecipe(guideMode);
   plan = Sourdough.computeRecipe(recipe);
   if (bowlIdx >= plan.bowls.length) bowlIdx = 0;
   const bowl = plan.bowls[bowlIdx], r = bowl.result, type = recipe.type;
@@ -478,19 +528,24 @@ function render() {
   // Banner
   const banner = document.getElementById('banner');
   banner.classList.remove('hidden');
-  if (linked) {
+  if (mine) {
     const what = multi ? `${plan.bowls.length} bowls · ${unitWord(type, totalPieces)}` : unitWord(type, bowl.loaves);
     const levs = [...new Set(plan.bowls.map(b => Math.round(b.levainPct * 100)))];
-    banner.innerHTML = `<strong>Your recipe</strong> · ${what} · ${Math.round(recipe.hyd * 100)}% hydration · ${(recipe.salt * 100).toFixed(1)}% salt · ${levs.map(l => l + '%').join('/')} levain`;
+    banner.innerHTML = `<strong>Your recipe</strong> · ${what} · ${Math.round(recipe.hyd * 100)}% hydration · ${(recipe.salt * 100).toFixed(1)}% salt${recipe.oil ? ` · ${+(recipe.oil * 100).toFixed(1)}% olive oil` : ''} · ${levs.map(l => l + '%').join('/')} levain`;
+  } else if (linked) {
+    banner.innerHTML = `Showing the default ${guideMode} recipe. <a href="#" onclick="setGuideMode('${linked.type}');return false">Back to your ${linked.type} recipe</a>`;
   } else {
-    banner.innerHTML = `Showing the default recipe (${type === 'baguette' ? 'two 400 g baguettes' : 'one 950 g loaf'}). <a href="sourdough-calculator.html">Open the guide from the calculator</a> to see your own quantities.`;
+    const def = { loaf: 'one 950 g loaf', baguette: 'two 400 g baguettes', focaccia: 'one 23 × 33 cm tray' }[type];
+    banner.innerHTML = `Showing the default recipe (${def}). <a href="sourdough-calculator.html">Open the guide from the calculator</a> to see your own quantities.`;
   }
 
   // Ingredient intro
-  document.getElementById('ing-intro').innerHTML = linked
+  document.getElementById('ing-intro').innerHTML = mine
     ? (multi ? `Quantities for your ${plan.bowls.length} bowls. You make one levain for the whole bake, then mix each bowl separately.`
-             : `Quantities for your recipe — ${unitWord(type, bowl.loaves)}${bowl.oneBowl || bowl.loaves === 1 ? '' : ', mixed one at a time'}, ${g(bowl.lwt)} each.`)
-    : `Default quantities for ${type === 'baguette' ? 'two plain baguettes (400 g dough each, one bowl)' : 'one white sourdough loaf (950 g dough; the baked loaf is about 820 g)'}.`;
+             : `Quantities for your recipe — ${unitWord(type, bowl.loaves)}${bowl.tray ? ` (${esc(bowl.tray.label)})` : ''}${bowl.oneBowl || bowl.loaves === 1 ? '' : ', mixed one at a time'}, ${g(bowl.lwt)} of dough each.`)
+    : { baguette: 'Default quantities for two plain baguettes (400 g dough each, one bowl).',
+        focaccia: 'Default quantities for one focaccia in a 23 × 33 cm pan (835 g dough, 75% hydration).',
+        loaf: 'Default quantities for one white sourdough loaf (950 g dough; the baked loaf is about 820 g).' }[type];
 
   // Levain build block
   const B = plan.build;
@@ -520,6 +575,7 @@ function render() {
     ['Levain', r.levain, 'From Step 1'],
     ['Water', r.water, 'Room temperature, preferably bottled or filtered'],
     ['Cooking salt', r.salt, '', true],
+    ...(r.oil ? [['Olive oil', r.oil, 'Extra virgin']] : []),
     [split ? 'Flour' : 'White bread flour', r.flour, split ? '' : 'Wallaby brand recommended'],
   ];
   let doughRows = rows.map(([n, v, note, salt]) =>
@@ -530,8 +586,8 @@ function render() {
   }
   r.mixins.forEach(m => { doughRows += `<tr><td>${esc(m.name)}<span class="note">Added at the second stretch and fold</span></td><td class="amt">${Sourdough.fmt(m.g)}<small>g</small></td></tr>`; });
   doughRows += `<tr class="total"><td>Total dough</td><td class="amt">${Sourdough.fmt(r.totalDough)}<small>g</small></td></tr>`;
-  const doughTitle = perPiece ? `Dough — ${esc(bowl.name)}, for each ${type === 'baguette' ? 'baguette' : 'loaf'}`
-                              : `Dough — ${linked ? esc(bowl.name) : 'Step 2'}`;
+  const doughTitle = perPiece ? `Dough — ${esc(bowl.name)}, for each ${pieceWord(type)}`
+                              : `Dough — ${mine ? esc(bowl.name) : 'Step 2'}`;
   const doughSub = perPiece ? `mix ${bowl.loaves} times` : unitWord(type, bowl.loaves);
   document.getElementById('ing-dough').innerHTML = `
     <div class="ing-block"><h4>${doughTitle} <span>${doughSub}</span></h4><table class="ing-table">${doughRows}</table></div>`;
@@ -541,7 +597,7 @@ function render() {
   document.getElementById('ing-shopping').innerHTML = `
     <div class="ing-block"><table class="ing-table">
       <tr><td>Total flour to have on hand<span class="note">Levain plus ${multi ? 'all bowls' : 'dough'}${recipe.blend ? ', all types' : ''}</span></td><td class="amt">${Sourdough.fmt(flourAll)}<small>g</small></td></tr>
-      <tr><td>Rice flour or coarse semolina<span class="note">For dusting the ${type === 'baguette' ? 'couche' : 'banneton'}</span></td><td class="amt text">as needed</td></tr>
+      ${type === 'focaccia' ? trayOilRow(plan) : `<tr><td>Rice flour or coarse semolina<span class="note">For dusting the ${type === 'baguette' ? 'couche' : 'banneton'}</span></td><td class="amt text">as needed</td></tr>`}
     </table></div>`;
 
   // Jar size: levain roughly doubles
@@ -577,27 +633,45 @@ function render() {
 
   // Step 2: mixing quantities
   document.getElementById('mix-intro').innerHTML = perPiece
-    ? `These quantities are for <strong>one ${type === 'baguette' ? 'baguette' : 'loaf'}</strong> — repeat ${bowl.loaves} times, or mix them all in one bowl (tick “Mix in one bowl” in the calculator). Add ingredients in this order:`
+    ? `These quantities are for <strong>one ${pieceWord(type)}</strong> — repeat ${bowl.loaves} times, or mix them all in one bowl (tick “Mix in one bowl” in the calculator). Add ingredients in this order:`
     : (multi ? `For <strong>${esc(bowl.name)}</strong>, add ingredients in this order:` : 'Add ingredients to your bowl in this order:');
   document.querySelectorAll('[data-q]').forEach(el => {
     const k = el.dataset.q;
     if (k === 'flour-blend') {
       el.innerHTML = split ? ` (${listAnd([['white', split.white], ['whole wheat', split.ww], ['rye', split.rye]].filter(x => x[1] > 0).map(x => `${Sourdough.fmt(x[1])} g ${x[0]}`))})` : '';
     } else {
-      el.textContent = g(r[k], k === 'salt');
+      el.textContent = g(r[k] || 0, k === 'salt');
     }
   });
+  document.querySelectorAll('[data-oil]').forEach(el => el.classList.toggle('hidden', !r.oil));
 
   // Step 3: mix-ins
   document.getElementById('mixin-text').innerHTML = r.mixins.length
-    ? `Add ${listAnd(r.mixins.map(m => `<span class="q">${g(m.g)}</span> ${esc(m.name)}`))} during the second stretch and fold. This works for both loaves and baguettes.`
-    : 'If adding olives, toasted walnuts or other mix-ins (around 15% of the flour), incorporate them during the second stretch and fold. This works for both loaves and baguettes.';
+    ? `Add ${listAnd(r.mixins.map(m => `<span class="q">${g(m.g)}</span> ${esc(m.name)}`))} during the second stretch and fold.`
+    : 'If adding olives, toasted walnuts or other mix-ins (around 15% of the flour), incorporate them during the second stretch and fold. This works for loaves, baguettes and focaccia.';
 
   // Step 4: dividing
   const divideText = (bowl.oneBowl && bowl.loaves > 1)
-    ? `Divide the dough into <span class="q">${bowl.loaves} pieces of about ${g(r.totalDough / bowl.loaves)}</span> each — use your scales for even ${type === 'baguette' ? 'baguettes' : 'loaves'}.`
+    ? (type === 'focaccia'
+        ? `Divide the dough into <span class="q">${bowl.loaves} pieces of about ${g(r.totalDough / bowl.loaves)}</span> each — one for each tray.`
+        : `Divide the dough into <span class="q">${bowl.loaves} pieces of about ${g(r.totalDough / bowl.loaves)}</span> each — use your scales for even ${UNITS[type][1]}.`)
     : '';
   document.querySelectorAll('[data-divide]').forEach(el => { el.innerHTML = divideText; el.classList.toggle('hidden', !divideText); });
+
+  // Focaccia: oil for the selected bowl's tray
+  if (bowl.tray) {
+    const o = Sourdough.trayOil(bowl.tray.area);
+    document.querySelectorAll('[data-trayoil]').forEach(el => { el.textContent = `about ${o.text} (${o.ml} ml)`; });
+    document.querySelectorAll('[data-eachtray]').forEach(el => { el.textContent = bowl.loaves > 1 ? 'each' : 'the'; });
+  }
+}
+
+// Olive oil for greasing all trays, plus the dough oil if any
+function trayOilRow(plan) {
+  const trayMl = plan.bowls.reduce((s, b) => s + (b.tray ? Sourdough.trayOil(b.tray.area).ml * b.loaves : 0), 0);
+  const doughG = plan.bowls.reduce((s, b) => s + b.result.oil * b.factor, 0);
+  return `<tr><td>Olive oil for the tray${trayMl && plan.bowls.reduce((s, b) => s + b.loaves, 0) > 1 ? 's' : ''}<span class="note">For greasing, plus a drizzle on top before baking${doughG ? ` — separate from the ${g(doughG)} in the dough` : ''}</span></td><td class="amt">${trayMl}<small>ml</small></td></tr>
+      <tr><td>Flaky sea salt and toppings<span class="note">Rosemary, olives, cherry tomatoes…</span></td><td class="amt text">as you like</td></tr>`;
 }
 
 function pickBowl(i) { bowlIdx = i; render(); }
@@ -607,11 +681,14 @@ function setGuideMode(m) {
   guideMode = m;
   document.getElementById('tab-loaf').classList.toggle('active', m === 'loaf');
   document.getElementById('tab-baguette').classList.toggle('active', m === 'baguette');
-  document.querySelectorAll('[data-mode]').forEach(el => el.classList.toggle('hidden', el.dataset.mode !== m));
-  document.getElementById('hero-mode-label').textContent = m === 'loaf' ? 'Loaf guide' : 'Baguette guide';
-  document.getElementById('hero-desc').textContent = m === 'loaf'
-    ? 'Everything you need to bake a great sourdough loaf — from your first levain to pulling a golden crust from the oven.'
-    : 'The complete guide to baking sourdough baguettes — same principles as a loaf, with the specific shaping and baking steps for baguettes.';
+  document.getElementById('tab-focaccia').classList.toggle('active', m === 'focaccia');
+  document.querySelectorAll('[data-mode]').forEach(el => el.classList.toggle('hidden', !el.dataset.mode.split(' ').includes(m)));
+  document.getElementById('hero-mode-label').textContent = { loaf: 'Loaf guide', baguette: 'Baguette guide', focaccia: 'Focaccia guide' }[m];
+  document.getElementById('hero-desc').textContent = {
+    loaf: 'Everything you need to bake a great sourdough loaf — from your first levain to pulling a golden crust from the oven.',
+    baguette: 'The complete guide to baking sourdough baguettes — same principles as a loaf, with the specific shaping and baking steps for baguettes.',
+    focaccia: 'Sourdough focaccia baked in a tray — the same levain and mixing as a loaf, then an oiled tray, deep dimples and a crisp, golden base.',
+  }[m];
   render();
   updateNav();
 }

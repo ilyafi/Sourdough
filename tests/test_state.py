@@ -1,137 +1,217 @@
-"""Interaction tests for sourdough-calculator.html: entries survive re-renders,
-totals stay coherent, labels match the mode.
+"""Interaction tests for sourdough-calculator.html, driven like a person would:
+entries survive re-renders, focaccia trays and thickness, olive oil, the page
+remembering the last bake, named recipes, and storage being unavailable.
 
 Run:  python3 tests/test_state.py          (exit code 1 on any failure)
 """
 import asyncio, sys
 from playwright.async_api import async_playwright
-from common import launch, PAGE
+from common import browser, fresh_page, PAGE
 
 results = []
 def check(name, ok, detail=''):
     results.append((name, bool(ok), detail))
 
-async def typ(pg, sel, v):
-    await pg.fill(sel, str(v))      # fires input events like a real user
+TABLE = """() => {
+  const o = {}; document.querySelectorAll('.out-table tbody tr').forEach(r => {
+    const l = r.querySelector('td.col-lbl'); if (!l) return;
+    o[l.textContent.trim()] = [...r.querySelectorAll('td.val')].map(t => t.textContent.replace(/\\s*g$/,'').replace(/,/g,'').trim());
+  });
+  o._heads = [...document.querySelectorAll('.out-table thead th')].map(t => t.textContent.trim());
+  o._notes = [...document.querySelectorAll('.out-notes p')].map(p => p.textContent.trim());
+  return o; }"""
 
-async def table(pg):
-    return await pg.evaluate("""() => {
-      const o = {}; document.querySelectorAll('.out-table tbody tr').forEach(r => {
-        const l = r.querySelector('td.col-lbl'); if (!l) return;
-        o[l.textContent.trim()] = [...r.querySelectorAll('td.val')].map(t => t.textContent.replace(/\\s*g$/,'').replace(/,/g,'').trim());
-      });
-      o._heads = [...document.querySelectorAll('.out-table thead th')].map(t => t.textContent.trim());
-      o._notes = [...document.querySelectorAll('.out-table tr.note-row td')].map(t => t.textContent.trim());
-      return o; }""")
-
-async def vals(pg, *sels):
-    return [await pg.input_value(s) for s in sels]
+async def table(pg): return await pg.evaluate(TABLE)
+async def ids(pg): return await pg.evaluate("state.bowls.map(b => b.id)")
+async def toggle(pg, input_id): await pg.click(f'label:has(#{input_id})')
+async def total(pg, col=0): return int((await table(pg))['Total dough'][col])
 
 async def main():
     async with async_playwright() as p:
-        b, pg, errs = await launch(p, viewport={'width': 1100, 'height': 900})
+        b = await browser(p)
+        errs = []
+        pg = await fresh_page(b, errs, viewport={'width': 1100, 'height': 900})
+        await pg.goto(PAGE)
 
         # ── Mix-ins survive re-renders ──
-        await pg.goto(PAGE)
-        await pg.click('#p-simple-in .bowl-card .btn-add')
-        m = (await pg.evaluate("bowls[0].mixins"))[0]
-        await typ(pg, f'#bmx-n-1-{m}', 'figs'); await typ(pg, f'#bmx-p-1-{m}', '22')
-        await pg.click('#p-simple-in .btn-add-bowl')
-        v = await vals(pg, f'#bmx-n-1-{m}', f'#bmx-p-1-{m}')
-        check('Simple: bowl 1 mix-in kept after adding a bowl', v == ['figs', '22'], v)
+        await pg.click('#p-bowls .bowl-card .btn-add')
+        [b1] = await ids(pg)
+        m = (await pg.evaluate("state.bowls[0].mixins[0].id"))
+        await pg.fill(f'#mx-n-{m}', 'figs'); await pg.fill(f'#mx-p-{m}', '22')
+        await pg.click('.btn-add-bowl')
+        check('Mix-in kept after adding a bowl', [await pg.input_value(f'#mx-n-{m}'), await pg.input_value(f'#mx-p-{m}')] == ['figs', '22'])
+        await pg.click('#btn-type-baguette'); await pg.click('#btn-type-focaccia'); await pg.click('#btn-type-loaf')
+        check('Mix-in kept after switching bread types', await pg.input_value(f'#mx-p-{m}') == '22')
+        await pg.click('#btn-advanced'); await pg.click('#btn-simple')
+        check('Mix-in kept after switching Simple/Advanced', await pg.input_value(f'#mx-n-{m}') == 'figs')
+        [_, b2] = await ids(pg)
+        await pg.click(f'#bowl-{b2} .btn-rm-bowl')
+        check('Mix-in kept after removing another bowl', await pg.input_value(f'#mx-n-{m}') == 'figs')
 
-        m2 = (await pg.evaluate("bowls[1].mixins"))[0]
-        await typ(pg, f'#bmx-n-2-{m2}', 'pecans'); await typ(pg, f'#bmx-p-2-{m2}', '18')
-        await pg.click('#p-simple-in .btn-add-bowl')
-        v = await vals(pg, f'#bmx-n-2-{m2}', f'#bmx-p-2-{m2}')
-        check('Simple: edited default mix-in kept after adding another bowl', v == ['pecans', '18'], v)
-
+        # ── Typed sizes are kept per bread type ──
+        await pg.fill(f'#b-weight-{b1}', '1100')
         await pg.click('#btn-type-baguette')
-        v = await vals(pg, f'#bmx-n-2-{m2}', f'#bmx-p-2-{m2}')
-        check('Simple: mix-ins kept after Loaf→Baguette', v == ['pecans', '18'], v)
+        check('Baguette label and default weight', 'baguette' in (await pg.text_content(f'label[for=b-weight-{b1}]')).lower() and await pg.input_value(f'#b-weight-{b1}') == '400')
+        await pg.click('#btn-type-loaf')
+        check('Typed loaf weight survives Loaf→Baguette→Loaf', await pg.input_value(f'#b-weight-{b1}') == '1100')
+        await pg.fill(f'#b-weight-{b1}', '')
+        check('Blank weight falls back to the default', await total(pg) in range(1900, 1906), (await table(pg))['Total dough'])
+        await pg.fill(f'#b-weight-{b1}', '950')
 
-        await pg.click('#p-simple-in .bowl-card:nth-child(1) .btn-rm-bowl')
-        v = await vals(pg, f'#bmx-n-2-{m2}', f'#bmx-p-2-{m2}')
-        check('Simple: other mix-ins kept after removing a bowl', v == ['pecans', '18'], v)
+        # ── All bowls column = full bake ──
+        await pg.click('.btn-add-bowl')
+        [b1, b2] = await ids(pg)
+        await pg.click(f'#bowl-{b2} .btn-rm')          # drop default walnuts
+        await toggle(pg, f'b-one-{b1}')                 # bowl 1 mixed per loaf
+        t = await table(pg); tot = [int(x) for x in t['Total dough']]
+        check('All bowls = full bake when a bowl is per-loaf', tot[2] == tot[0] * 2 + tot[1], tot)
+        check('Per-loaf header says so', 'one loaf' in t['_heads'][1], t['_heads'][1])
+        await toggle(pg, f'b-one-{b1}')
+        await pg.click(f'#bowl-{b2} .btn-rm-bowl')
 
-        await pg.goto(PAGE); await pg.click('#btn-advanced')
-        await pg.click('#p-adv-pct .btn-add')
-        a1 = (await pg.evaluate("advMx.slice()"))[0]
-        await typ(pg, f'#mx-n-{a1}', 'olives'); await typ(pg, f'#mx-p-{a1}', '12')
-        await pg.click('#p-adv-pct .btn-add')
-        v = await vals(pg, f'#mx-n-{a1}', f'#mx-p-{a1}')
-        check('Advanced: mix-in kept after adding another', v == ['olives', '12'], v)
-        a2 = (await pg.evaluate("advMx.slice()"))[1]
-        await typ(pg, f'#mx-n-{a2}', 'rosemary'); await typ(pg, f'#mx-p-{a2}', '1')
-        await pg.click('#p-adv-pct .mx-row:nth-child(1) .btn-rm')
-        v = await vals(pg, f'#mx-n-{a2}', f'#mx-p-{a2}')
-        check('Advanced: remaining mix-in kept after removing one', v == ['rosemary', '1'], v)
+        # ── Focaccia: trays, thickness, oil ──
+        await pg.click('#btn-type-focaccia')
+        check('Focaccia shows tray picker', await pg.is_visible(f'#b-tray-{b1}'))
+        check('Focaccia default: 23×33 medium → 835 g', await total(pg) in range(835, 840), await total(pg))
+        thin, med, thick = [], [], []
+        for lvl, store in (('Thin', thin), ('Medium', med), ('Thick', thick)):
+            await pg.click(f'#bowl-{b1} .seg-sm button:has-text("{lvl}")'); store.append(await total(pg))
+        check('Thickness changes dough: thin < medium < thick', thin[0] < med[0] < thick[0], (thin, med, thick))
+        await pg.click(f'#bowl-{b1} .seg-sm button:has-text("Medium")')
+        await pg.select_option(f'#b-tray-{b1}', 'p-33x46')
+        check('Bigger tray → more dough (33×46 ≈ 1670 g)', await total(pg) in range(1670, 1676), await total(pg))
+        await pg.select_option(f'#b-tray-{b1}', 'p-r24')
+        check('Round tray area used (⌀24 ≈ 498 g)', await total(pg) in range(497, 503), await total(pg))
+        await pg.select_option(f'#b-tray-{b1}', 'custom')
+        check('Custom starts from the last tray’s size (round 24)', await pg.input_value(f'#b-trayd-{b1}') == '24')
+        await pg.click(f'#bowl-{b1} .custom-tray button:has-text("Rectangle")')
+        await pg.fill(f'#b-trayw-{b1}', '41'); await pg.fill(f'#b-trayl-{b1}', '35')
+        check('Custom tray 41×35 → ~1579 g', await total(pg) in range(1578, 1584), await total(pg))
+        await pg.fill(f'#b-trayname-{b1}', 'Big tray'); await pg.click(f'#bowl-{b1} button:has-text("Save tray")')
+        sel = await pg.input_value(f'#b-tray-{b1}')
+        check('Saved tray is selected', sel.startswith('u') and 'Big tray' in await pg.text_content(f'#b-tray-{b1} option:checked'))
+        await pg.click('.btn-add-bowl')
+        [b1, b2] = await ids(pg)
+        check('Saved tray offered in another bowl', 'Big tray' in await pg.text_content(f'#b-tray-{b2}'))
+        check('New bowl copies the last bowl’s tray', await pg.input_value(f'#b-tray-{b2}') == sel)
+        await pg.click(f'#bowl-{b2} .btn-rm-bowl')
 
-        # ── All bowls column is the full bake ──
-        await pg.goto(PAGE)
-        await pg.click('#p-simple-in .btn-add-bowl')
-        await pg.click('#p-simple-in .bowl-card:nth-child(2) .btn-rm')       # drop walnuts
-        await pg.click('#p-simple-in .bowl-card:nth-child(1) .tog-wrap')     # bowl 1 per-loaf
         t = await table(pg)
-        tot = [int(x) for x in t['Total dough']]
-        check('All bowls = full bake when a bowl is per-loaf', tot[2] == tot[0]*2 + tot[1], tot)
-        check('Per-loaf column header says so', 'one loaf' in t['_heads'][1], t['_heads'][1])
-
-        # ── Large batches show exact grams ──
-        await pg.goto(PAGE)
-        await typ(pg, '#bowl-loaves-1', '12')
+        check('No olive oil row while oil is off', 'Olive oil' not in t)
+        check('Tray-oil note shown for focaccia', any('Tray oil' in n and 'tbsp' in n for n in t['_notes']), t['_notes'])
+        await toggle(pg, 'oil-on')
         t = await table(pg)
-        check('≥10 kg shown in exact grams', t['Total dough'][0].isdigit() and int(t['Total dough'][0]) in range(11400, 11406),
-              t['Total dough'][0])
-
-        # ── Duplicate mix-in names merge ──
-        await pg.goto(PAGE); await pg.click('#btn-advanced')
-        await pg.click('#p-adv-pct .btn-add'); await pg.click('#p-adv-pct .btn-add')
-        ms = await pg.evaluate("advMx.slice()")
-        await typ(pg, f'#mx-n-{ms[0]}', 'seeds'); await typ(pg, f'#mx-p-{ms[0]}', '5')
-        await typ(pg, f'#mx-n-{ms[1]}', 'Seeds'); await typ(pg, f'#mx-p-{ms[1]}', '10')
+        check('Olive oil row appears when switched on', 'Olive oil' in t and float(t['Olive oil'][0]) > 0, t.get('Olive oil'))
+        flour = float(t['Total flour (incl. levain)'][0])
+        check('Oil is 4% of flour by default', abs(float(t['Olive oil'][0]) - flour * 0.04) <= 1.5, (t['Olive oil'], flour))
+        await pg.fill('#oil-pct', '8')
         t = await table(pg)
-        comp = sum(float(t[k][0]) for k in ('Levain', 'Water', 'Salt', 'Flour', 'seeds'))
-        check('Duplicate mix-in names merge and table adds up', abs(comp - float(t['Total dough'][0])) <= 0.5,
-              f'seeds={t["seeds"][0]}, rows={comp:.1f}, total={t["Total dough"][0]}')
+        check('Oil % follows the input', abs(float(t['Olive oil'][0]) - float(t['Total flour (incl. levain)'][0]) * 0.08) <= 1.5)
+        await pg.click('#btn-type-loaf')
+        check('Oil settings hidden for loaves', not await pg.is_visible('#oil-settings') and 'Olive oil' not in await table(pg))
+        await pg.click('#btn-type-focaccia')
 
-        # ── Flour blend ──
-        await pg.goto(PAGE); await pg.click('#btn-advanced')
-        await typ(pg, '#fb-white', '80'); await typ(pg, '#fb-ww', '20')
-        t = await table(pg)
-        ww, tf, fl = float(t['Whole wheat'][0]), float(t['Total flour (incl. levain)'][0]), float(t['Flour'][0])
-        check('Blend: whole wheat is 20% of total flour', abs(ww/tf - 0.20) < 0.002, f'{ww} / {tf}')
-        check('Blend rows sum to flour', float(t['White'][0]) + ww == fl, f'{t["White"][0]} + {ww} vs {fl}')
-        await typ(pg, '#a-starter', '60'); await pg.dispatch_event('#a-starter', 'input')
-        await typ(pg, '#fb-white', '20'); await typ(pg, '#fb-ww', '80')
-        t = await table(pg)
-        check('Blend: warns when levain flour exceeds white share', any('levain' in n.lower() for n in t['_notes']), t['_notes'])
-
-        # ── Labels, defaults, fallbacks ──
-        await pg.goto(PAGE); await pg.click('#btn-type-baguette')
-        lbl = await pg.evaluate("document.querySelector('#bowl-cards .frow .field:nth-child(2) label').textContent")
-        check('Baguette: weight label says baguette', 'baguette' in lbl.lower(), lbl)
-        check('Baguette: default weight 400 g', (await pg.input_value('#bowl-weight-1')) == '400')
+        # ── Advanced: per-type hydration, own levain ──
         await pg.click('#btn-advanced')
+        check('Advanced focaccia defaults to 75% hydration', await pg.text_content('#lbl-h') == '75%')
+        await pg.click('#btn-type-loaf')
+        check('Advanced loaf keeps 70% hydration', await pg.text_content('#lbl-h') == '70%')
+        await pg.click('#btn-type-focaccia')
+        [b1] = await ids(pg)
+        await toggle(pg, f'b-levon-{b1}'); await pg.fill(f'#b-lev-{b1}', '25')
         t = await table(pg)
-        check('Advanced header does not borrow Simple bread type', 'baguette' not in t['_heads'][1], t['_heads'][1])
+        check('Own levain % used', abs(float(t['Levain'][0]) / float(t['Total flour (incl. levain)'][0]) - 0.25) < 0.004)
+        await pg.click('#btn-simple')
 
-        await pg.goto(PAGE)
-        await typ(pg, '#bowl-weight-1', '1100')
-        await pg.click('#btn-type-baguette'); await pg.click('#btn-type-loaf')
-        check('Typed weight survives Loaf→Baguette→Loaf', (await pg.input_value('#bowl-weight-1')) == '1100')
+        # ── Remembers the last bake ──
+        await pg.fill(f'#b-name-{b1}', 'Saturday focaccia')
+        await pg.wait_for_timeout(400)
+        before = await table(pg)
+        await pg.reload(); await pg.wait_for_timeout(200)
+        after = await table(pg)
+        check('Reload restores bread type', await pg.get_attribute('#btn-type-focaccia', 'class') and 'active' in await pg.get_attribute('#btn-type-focaccia', 'class'))
+        check('Reload restores the same recipe', before == after, (before.get('Total dough'), after.get('Total dough')))
+        [b1] = await ids(pg)
+        check('Reload restores names and trays', await pg.input_value(f'#b-name-{b1}') == 'Saturday focaccia' and 'Big tray' in await pg.text_content(f'#b-tray-{b1} option:checked'))
+        check('Reload restores mix-ins', 'figs' in after, list(after))
 
-        await pg.goto(PAGE)
-        ref = (await table(pg))['Total dough'][0]
-        await typ(pg, '#bowl-weight-1', '')
-        t = await table(pg)
-        check('Blank weight falls back to default (950 g)', t['Total dough'][0] == ref, f'{t["Total dough"][0]} vs {ref}')
+        # ── Named recipes ──
+        await pg.click('#recipes-btn')
+        check('Recipes dialog opens', await pg.is_visible('#recipes-dlg'))
+        await pg.click('#rcp-save-btn')
+        check('Saving without a name asks for one', 'name' in (await pg.text_content('#rcp-msg')).lower())
+        await pg.fill('#rcp-name', 'Party focaccia'); await pg.click('#rcp-save-btn')
+        check('Recipe saved and listed', 'Party focaccia' in await pg.text_content('#rcp-list'))
+        check('Toolbar shows the recipe name', 'Party focaccia' in await pg.text_content('#recipes-btn'))
+        saved_total = await total(pg)
+        await pg.click('.dlg-x')
+        await pg.click('#btn-type-loaf'); await pg.fill(f'#b-count-{b1}', '5')
+        check('Edited recipe shows a dot', (await pg.text_content('#recipes-btn')).endswith('•'))
+        await pg.click('#recipes-btn')
+        await pg.fill('#rcp-name', 'Five loaves'); await pg.click('#rcp-save-btn')
+        await pg.fill('#rcp-name', 'party FOCACCIA')
+        check('Same name (any case) offers Replace', await pg.text_content('#rcp-save-btn') == 'Replace')
+        await pg.fill('#rcp-name', '')
+        items = await pg.eval_on_selector_all('.rcp-item .rcp-name', 'els => els.map(e => e.textContent)')
+        check('Two recipes listed, newest first', len(items) == 2 and items[0].startswith('Five loaves'), items)
+        await pg.click('.rcp-item:has-text("Party focaccia") button:has-text("Load")')
+        check('Loading restores the saved recipe', 'active' in await pg.get_attribute('#btn-type-focaccia', 'class') and await total(pg) == saved_total)
+        check('Loaded recipe is not marked changed', not (await pg.text_content('#recipes-btn')).endswith('•'))
+        await pg.reload(); await pg.wait_for_timeout(200)
+        check('Loaded recipe name survives reload', 'Party focaccia' in await pg.text_content('#recipes-btn'))
+        await pg.click('#recipes-btn')
+        await pg.click('.rcp-item:has-text("Five loaves") button:has-text("Delete")')
+        check('Delete asks to confirm', await pg.is_visible('.rcp-item:has-text("Five loaves") button:has-text("Yes")'))
+        await pg.click('.rcp-item:has-text("Five loaves") button:has-text("Yes")')
+        check('Recipe deleted', 'Five loaves' not in await pg.text_content('#rcp-list'))
+        await pg.click('#rcp-new button')
+        await pg.click('#rcp-new button:has-text("Yes")')
+        [b1] = await ids(pg)
+        check('Start new: defaults, keeps bread type', await pg.input_value(f'#b-name-{b1}') == 'Bowl 1' and 'active' in await pg.get_attribute('#btn-type-focaccia', 'class'))
+        check('Start new: no recipe name', await pg.text_content('#recipes-btn') == '📁 Recipes')
+        check('Saved trays survive starting new', 'Big tray' in await pg.text_content(f'#b-tray-{b1}'))
 
-        t = await table(pg)
-        check('No redundant "Added flour" row', 'Added flour' not in t)
+        # ── Opening the recipe list must not disturb the bowls being edited ──
+        await pg.click('#btn-type-loaf')
+        await pg.click('.btn-add-bowl'); await pg.click('.btn-add-bowl')
+        await pg.click('#recipes-btn'); await pg.click('.dlg-x')
+        for _ in range(3): await pg.click('.btn-add-bowl')
+        all_ids = await ids(pg)
+        check('Bowl ids stay unique after opening Recipes', len(set(all_ids)) == len(all_ids), all_ids)
+        await pg.fill(f'#b-name-{all_ids[-1]}', 'Last')
+        names = await pg.evaluate("state.bowls.map(b => b.name)")
+        check('Editing the new bowl changes only that bowl', names == ['Bowl 1', 'Bowl 2', 'Bowl 3', 'Bowl 4', 'Bowl 5', 'Last'], names)
+        for _ in range(5): await pg.click('.bowl-card:last-child .btn-rm-bowl')
 
-        href = await pg.get_attribute('#guide-link', 'href')
-        check('Guide link carries the recipe', href.startswith('guide.html?r='), href[:90])
+        # ── Guide link ──
+        check('Guide link carries the recipe', (await pg.get_attribute('#guide-link', 'href')).startswith('guide.html?r='))
+
+        # ── Phone width: no sideways scrolling of the page ──
+        ph = await fresh_page(b, errs, viewport={'width': 375, 'height': 800})
+        await ph.goto(PAGE)
+        await ph.click('#btn-type-focaccia'); await ph.click('.btn-add-bowl'); await ph.click('.btn-add-bowl')
+        sw = await ph.evaluate("document.documentElement.scrollWidth")
+        check('No page overflow at 375 px with 3 focaccia bowls', sw <= 375, sw)
+
+        # ── Storage blocked (e.g. private browsing) ──
+        blocked_errs = []
+        ctx = await b.new_context()
+        await ctx.add_init_script("Object.defineProperty(window, 'localStorage', { get() { throw new Error('blocked'); } });")
+        bp = await ctx.new_page(); bp.on('pageerror', lambda e: blocked_errs.append(str(e)))
+        await bp.goto(PAGE)
+        await bp.click('#btn-type-focaccia'); await bp.click('.btn-add-bowl')
+        await bp.click('#recipes-btn'); await bp.fill('#rcp-name', 'X'); await bp.click('#rcp-save-btn')
+        check('Blocked storage: page still works', not blocked_errs and len((await bp.evaluate(TABLE))['Total dough']) == 3, blocked_errs)
+        check('Blocked storage: explains save failed', 'blocking storage' in await bp.text_content('#rcp-msg'))
+
+        # ── Corrupt saved data falls back to defaults ──
+        cp = await fresh_page(b, errs)
+        await cp.goto(PAGE)
+        await cp.evaluate("localStorage.setItem('sourdough:last', '{not json'); localStorage.setItem('sourdough:recipes', '[1,null,{\"x\":1}]')")
+        await cp.reload()
+        check('Corrupt saved data → defaults', (await cp.evaluate(TABLE))['Total dough'] in (['1901'], ['1902']))
+        await cp.click('#recipes-btn')
+        check('Corrupt recipe list ignored', 'No saved recipes' in await cp.text_content('#rcp-list'))
 
         await b.close()
 

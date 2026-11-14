@@ -84,9 +84,9 @@ header{padding:36px 40px 22px;border-bottom:1px solid var(--border);display:flex
 .btn-ghost:hover{background:var(--accent-soft);color:var(--text);border-color:var(--border-strong)}
 
 /* ── LAYOUT ── */
-main{max-width:1200px;margin:0 auto;padding:28px 24px 80px;display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+main{max-width:1200px;margin:0 auto;padding:28px 24px 80px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
 @media(max-width:760px){
-  main{grid-template-columns:1fr;padding:18px 16px 60px;gap:18px}
+  main{grid-template-columns:minmax(0,1fr);padding:18px 16px 60px;gap:18px}
   header{padding:26px 16px 18px}
   .mode-bar{padding:12px 16px}
   .panel{padding:20px 18px}
@@ -95,7 +95,8 @@ main{max-width:1200px;margin:0 auto;padding:28px 24px 80px;display:grid;grid-tem
 /* ── PANELS ── */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 26px;box-shadow:var(--shadow)}
 .panel.full{grid-column:1/-1}
-.panel.gone{display:none!important}
+.panel.gone,.gone{display:none!important}
+.panel{min-width:0}
 .ptitle{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--text);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .ptitle-sm{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--accent-text);margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .unit-note{font:400 13px 'Inter',system-ui,sans-serif;color:var(--text-3)}
@@ -194,10 +195,51 @@ input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var
 .out-table td.val.total-row{font-size:26px;font-weight:500;color:var(--res-accent);border-top:1px solid var(--res-muted);border-bottom:none;padding-top:14px}
 .out-table th{font:italic 600 19px 'Cormorant Garamond',serif;font-variant-numeric:lining-nums;font-feature-settings:'lnum' 1;color:var(--res-text);padding:0 4px 12px 14px;text-align:right;border-bottom:1px solid var(--res-muted);white-space:nowrap}
 .out-table th.th-lbl{font:600 13px 'Inter',system-ui,sans-serif;color:var(--res-muted);text-align:left;padding-left:0;vertical-align:bottom}
-.out-table th .sub-hdr{display:block;font:400 13px 'Inter',system-ui,sans-serif;color:var(--res-muted);margin-top:2px}
+.out-table th .sub-hdr{display:block;white-space:normal;min-width:110px;max-width:220px;margin-left:auto;font:400 13px 'Inter',system-ui,sans-serif;color:var(--res-muted);margin-top:2px}
 .out-table tr.divrow td{padding:0;height:6px;border:none}
+.out-notes p{font-size:14px;color:var(--res-muted);line-height:1.5;margin-top:10px}
+.out-notes p.warn{color:var(--res-accent);font-weight:500}
 .out-table tr.note-row.warn td{color:var(--res-accent);font-weight:500}
 .out-table tr.note-row td{font-size:14px;color:var(--res-muted);padding:12px 4px 2px 0;border:none;line-height:1.5}
+
+/* ── FOCACCIA, RECIPES, SMALL CONTROLS ── */
+.seg-3 .mode-btn{padding:8px 16px}
+.seg-sm{margin:2px 0 12px}
+.seg-sm .mode-btn{padding:6px 12px;font-size:13px}
+.field select{font:500 15px 'Inter',system-ui,sans-serif;appearance:auto}
+.tray-info{font-size:13px;color:var(--text-3);margin:-4px 0 14px}
+.tray-info strong{color:var(--accent-text);font-weight:600}
+.custom-tray{border-left:2px solid var(--border);padding:2px 0 2px 12px;margin:-2px 0 12px}
+.save-tray{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.save-tray input{flex:1;min-width:0;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font:400 14px 'Inter',system-ui,sans-serif;color:var(--text)}
+.save-tray input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)}
+.linkbtn{background:none;border:none;padding:0;margin:-6px 0 12px;font:500 13px 'Inter',system-ui,sans-serif;color:var(--accent-text);text-decoration:underline;cursor:pointer}
+.msg{font-size:13px;color:var(--text-3);min-height:18px;margin-top:4px}
+.msg.ok{color:var(--accent-text)} .msg.err{color:var(--danger)}
+#recipes-btn{max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.btn-ghost.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn-ghost.primary:hover{filter:brightness(1.07);background:var(--accent);color:var(--on-accent)}
+.btn-ghost.danger:hover{background:var(--danger-bg);color:var(--danger);border-color:var(--danger)}
+dialog#recipes-dlg{margin:auto;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 40px);border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);padding:0;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog#recipes-dlg::backdrop{background:rgba(20,14,8,.45)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 12px;border-bottom:1px solid var(--border)}
+.dlg-head h2{font:600 26px 'Cormorant Garamond',serif}
+.dlg-body{padding:16px 20px 20px}
+.dlg-x{background:none;border:none;font-size:22px;line-height:1;color:var(--text-2);cursor:pointer;padding:4px 8px}
+.rcp-save{display:flex;gap:8px}
+.rcp-save input{flex:1;min-width:0;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;font:400 15px 'Inter',system-ui,sans-serif;color:var(--text)}
+.rcp-save input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)}
+.rcp-list{margin-top:14px;border-top:1px solid var(--border)}
+.rcp-item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.rcp-name{font-weight:600}
+.rcp-name small{font-weight:500;color:var(--accent-text);margin-left:6px}
+.rcp-sum{font-size:13px;color:var(--text-3)}
+.rcp-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.rcp-actions .btn-ghost{padding:6px 10px;font-size:13px}
+.rcp-empty{padding:14px 0;color:var(--text-3);font-size:14px}
+.rcp-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:16px}
+.rcp-foot .hint{margin:0}
+@media(max-width:520px){ .toolbar-right{flex-wrap:wrap} .rcp-item{flex-wrap:wrap} }
 </style>
 
 <script>
@@ -212,108 +254,99 @@ try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') 
     <h1>Ilya's Sourdough <em>Calculator</em></h1>
     <p>Baker's percentages · scaling · mix-ins</p>
   </div>
-  <div class="hicon">🍞</div>
+  <div class="hicon" id="hicon">🍞</div>
 </header>
 
 <div class="mode-bar f2">
   <div class="toolbar">
     <div class="mode-toggle" role="group" aria-label="Mode">
-      <button class="mode-btn active" id="btn-simple"   onclick="setMode('simple')">Simple</button>
-      <button class="mode-btn"        id="btn-advanced" onclick="setMode('advanced')">Advanced</button>
+      <button class="mode-btn" id="btn-simple"   onclick="setMode('simple')">Simple</button>
+      <button class="mode-btn" id="btn-advanced" onclick="setMode('advanced')">Advanced</button>
     </div>
     <div class="toolbar-right">
+      <button class="btn-ghost" id="recipes-btn" onclick="openRecipes()" title="Save and load recipes">📁 Recipes</button>
       <button class="btn-ghost" id="theme-btn" onclick="cycleTheme()" title="Colour theme">Theme: Auto</button>
-      <a class="btn-ghost" id="guide-link" href="guide.html" onclick="updateGuideLink()">📖 Baking guide</a>
+      <a class="btn-ghost" id="guide-link" href="guide.html">📖 Baking guide</a>
     </div>
   </div>
 </div>
 
 <main id="grid">
 
-  <!-- SIMPLE INPUTS -->
-
-  <div class="panel f3" id="p-simple-in">
+  <!-- SETTINGS -->
+  <div class="panel f3" id="p-settings">
     <div class="ptitle">Settings</div>
 
-<div class="lbl">Bread type</div>
-<div class="mode-toggle seg" role="group" aria-label="Bread type">
-  <button class="mode-btn active" id="btn-type-loaf"     onclick="setBreadType('loaf')"    >Loaf</button>
-  <button class="mode-btn"        id="btn-type-baguette" onclick="setBreadType('baguette')">Baguette</button>
-</div>
+    <div class="lbl">Bread type</div>
+    <div class="mode-toggle seg seg-3" role="group" aria-label="Bread type">
+      <button class="mode-btn" id="btn-type-loaf"     onclick="setType('loaf')">Loaf</button>
+      <button class="mode-btn" id="btn-type-baguette" onclick="setType('baguette')">Baguette</button>
+      <button class="mode-btn" id="btn-type-focaccia" onclick="setType('focaccia')">Focaccia</button>
+    </div>
 
-<div class="lbl">Fermentation speed</div>
-<div class="step-slider-wrap">
-  <div class="step-slider-labels">
-    <div class="step-lbl"        id="slbl-0" onclick="setStep(0)">Fast<small>20% levain</small></div>
-    <div class="step-lbl active" id="slbl-1" onclick="setStep(1)">Balanced<small>15% levain</small></div>
-    <div class="step-lbl"        id="slbl-2" onclick="setStep(2)">More Flavour<small>10% levain</small></div>
-  </div>
-  <div class="step-track">
-    <div class="step-line"></div>
-    <div class="step-fill" id="step-fill" style="width:50%"></div>
-    <div class="step-dots">
-      <div class="step-dot"        id="sdot-0" onclick="setStep(0)"></div>
-      <div class="step-dot active" id="sdot-1" onclick="setStep(1)"></div>
-      <div class="step-dot"        id="sdot-2" onclick="setStep(2)"></div>
+    <div id="simple-settings">
+      <div class="lbl">Fermentation speed</div>
+      <div class="step-slider-wrap">
+        <div class="step-slider-labels">
+          <div class="step-lbl" id="slbl-0" onclick="setSpeed(0)">Fast<small>20% levain</small></div>
+          <div class="step-lbl" id="slbl-1" onclick="setSpeed(1)">Balanced<small>15% levain</small></div>
+          <div class="step-lbl" id="slbl-2" onclick="setSpeed(2)">More Flavour<small>10% levain</small></div>
+        </div>
+        <div class="step-track">
+          <div class="step-line"></div>
+          <div class="step-fill" id="step-fill"></div>
+          <div class="step-dots">
+            <div class="step-dot" id="sdot-0" onclick="setSpeed(0)"></div>
+            <div class="step-dot" id="sdot-1" onclick="setSpeed(1)"></div>
+            <div class="step-dot" id="sdot-2" onclick="setSpeed(2)"></div>
+          </div>
+        </div>
+        <div class="step-desc" id="step-desc"></div>
+      </div>
+      <div class="hint" id="simple-pcts"></div>
+    </div>
+
+    <div id="adv-settings">
+      <div class="sl">
+        <div class="sl-lbl">Hydration <span id="lbl-h"></span></div>
+        <input type="range" id="a-hyd" min="50" max="115" oninput="setAdv('hyd', this.value)">
+      </div>
+      <div class="sl">
+        <div class="sl-lbl">Salt <span id="lbl-s"></span></div>
+        <input type="range" id="a-salt" min="1" max="3" step="0.1" oninput="setAdv('salt', this.value)">
+      </div>
+      <div class="sl">
+        <div class="sl-lbl">Levain <span id="lbl-st"></span></div>
+        <input type="range" id="a-starter" min="5" max="60" oninput="setAdv('levain', this.value)">
+      </div>
+      <div class="hint">Override per bowl with “Own levain %”</div>
+      <div class="ptitle-sm">Flour Blend</div>
+      <div class="fb-row"><label for="fb-white">White</label><div class="fb-pct"><input type="number" id="fb-white" min="0" max="100" oninput="setBlend('w', this.value)"></div></div>
+      <div class="fb-row"><label for="fb-ww">Whole wheat</label><div class="fb-pct"><input type="number" id="fb-ww" min="0" max="100" oninput="setBlend('ww', this.value)"></div></div>
+      <div class="fb-row"><label for="fb-rye">Rye</label><div class="fb-pct"><input type="number" id="fb-rye" min="0" max="100" oninput="setBlend('rye', this.value)"></div></div>
+      <div class="blend-bar"><div class="bseg" id="seg-w"></div><div class="bseg" id="seg-ww"></div><div class="bseg" id="seg-rye"></div></div>
+      <div class="blend-err" id="blend-err"></div>
+    </div>
+
+    <div id="oil-settings">
+      <div class="ptitle-sm">Olive oil</div>
+      <label class="tog-wrap"><input type="checkbox" id="oil-on" onchange="setOil(this.checked)"><span class="pip"></span><span class="tog-label">Add olive oil to the dough</span></label>
+      <div class="field" id="oil-pct-field">
+        <label for="oil-pct">Olive oil (% of flour)</label>
+        <div class="mx-pct" style="max-width:150px"><input type="number" id="oil-pct" min="0" max="20" step="0.5" oninput="setOilPct(this.value)"></div>
+      </div>
+      <div class="hint" id="oil-hint">Oil for greasing the tray is separate — see the note under the recipe.</div>
     </div>
   </div>
-  <div class="step-desc" id="step-desc">Balanced flavour and timing</div>
-</div>
 
-<div class="ptitle-sm" id="lbl-default-size">Standard Loaf Size</div>
-<div class="field" style="margin-bottom:20px">
-  <label id="lbl-default-weight">Default weight per loaf (g)</label>
-  <input type="number" id="s-default-weight" value="950" min="100" max="9999"
-    oninput="applyDefaultWeight()" style="max-width:180px">
-</div>
-<div class="ptitle-sm" id="lbl-bowls-title">Bowls</div>
-<div id="bowl-cards"></div>
-<button class="btn-add-bowl" onclick="addBowl()">+ Add another bowl</button>
-
-  </div>
-
-  <!-- ADVANCED: LOAF -->
-
-  <div class="panel f3 gone" id="p-adv-loaf">
-    <div class="ptitle">Bowl Settings</div>
-    <div id="adv-bowl-cards"></div>
-    <button class="btn-add-bowl" onclick="addAdvBowl()">+ Add another bowl</button>
-  </div>
-
-  <!-- ADVANCED: PERCENTAGES -->
-
-  <div class="panel f4 gone" id="p-adv-pct">
-    <div class="ptitle">Baker's Percentages</div>
-    <div class="sl">
-      <div class="sl-lbl">Hydration <span id="lbl-h">70%</span></div>
-      <input type="range" id="a-hyd" min="50" max="115" value="70" oninput="syncLbl('h','a-hyd','%');calc()">
-    </div>
-    <div class="sl">
-      <div class="sl-lbl">Salt <span id="lbl-s">2.0%</span></div>
-      <input type="range" id="a-salt" min="1" max="3" step="0.1" value="2" oninput="syncLbl('s','a-salt','%',1);calc()">
-    </div>
-    <div class="sl">
-      <div class="sl-lbl">Levain <span id="lbl-st">15%</span></div>
-      <input type="range" id="a-starter" min="5" max="60" value="15" oninput="syncLbl('st','a-starter','%');calc()">
-    </div>
-    <div class="hint">Override per bowl in Bowl Settings</div>
-    <div class="ptitle-sm">Flour Blend</div>
-    <div class="fb-row"><label>White</label><div class="fb-pct"><input type="number" id="fb-white" value="100" min="0" max="100" oninput="calc()"></div></div>
-    <div class="fb-row"><label>Whole wheat</label><div class="fb-pct"><input type="number" id="fb-ww" value="0" min="0" max="100" oninput="calc()"></div></div>
-    <div class="fb-row"><label>Rye</label><div class="fb-pct"><input type="number" id="fb-rye" value="0" min="0" max="100" oninput="calc()"></div></div>
-    <div class="blend-bar">
-      <div class="bseg" id="seg-w"  ></div>
-      <div class="bseg" id="seg-ww" ></div>
-      <div class="bseg" id="seg-rye"></div>
-    </div>
-    <div class="blend-err" id="blend-err"></div>
-    <div class="ptitle-sm">Mix-ins <span class="unit-note">(% of flour)</span></div>
-    <div id="a-mixins"></div>
-    <button class="btn-add" onclick="addMixin()">+ Add mix-in</button>
+  <!-- BOWLS -->
+  <div class="panel f3" id="p-bowls">
+    <div class="ptitle">Bowls</div>
+    <div id="bowl-cards"></div>
+    <button class="btn-add-bowl" onclick="addBowl()">+ Add another bowl</button>
   </div>
 
   <!-- RESULTS -->
-
   <div class="panel results-panel full f4" id="p-results">
     <div class="ptitle">Recipe Output</div>
     <div id="r-content"></div>
@@ -321,529 +354,557 @@ try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') 
 
 </main>
 
+<!-- RECIPES -->
+<dialog id="recipes-dlg" aria-labelledby="rcp-title">
+  <div class="dlg-head">
+    <h2 id="rcp-title">Recipes</h2>
+    <button class="dlg-x" onclick="closeRecipes()" aria-label="Close">×</button>
+  </div>
+  <div class="dlg-body">
+    <div class="lbl">Save the current settings as</div>
+    <div class="rcp-save">
+      <input type="text" id="rcp-name" placeholder="e.g. Walnut baguettes" maxlength="60" oninput="renderRecipes(false)"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();saveRecipe()}">
+      <button class="btn-ghost primary" id="rcp-save-btn" onclick="saveRecipe()">Save</button>
+    </div>
+    <div class="msg" id="rcp-msg"></div>
+    <div class="rcp-list" id="rcp-list"></div>
+    <div class="rcp-foot">
+      <div class="hint">Saved in this browser on this device only.</div>
+      <span id="rcp-new"></span>
+    </div>
+  </div>
+</dialog>
+
 <script src="sourdough-core.js"></script>
 <script>
-// ── STATE ─────────────────────────────────────────────────────────────────
-let mode    = 'simple';
-let stepVal = 1; // default = Balanced (15%)
-let breadType = 'loaf';
+// ════════════════════════════════════════════════════════════════════════
+// The page runs from one `state` object. Inputs update state, then calc()
+// redraws the results. State is saved to this browser after every change,
+// so reopening the page brings back the last bake. Named recipes are
+// copies of state saved under a name.
+// ════════════════════════════════════════════════════════════════════════
 
-const STEP_PCT  = [0.20, 0.15, 0.10];
-const STEP_DESC = [
-  'Faster rise · good for same-day baking',
-  'Balanced flavour and timing',
-  'Long, cold fermentation · deeper flavour'
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const TYPES = {
+  loaf:     { label: 'Loaf',     one: 'loaf',     many: 'loaves',    weight: 950, count: 2, simpleHyd: 70, icon: '🍞' },
+  baguette: { label: 'Baguette', one: 'baguette', many: 'baguettes', weight: 400, count: 2, simpleHyd: 70, icon: '🥖' },
+  focaccia: { label: 'Focaccia', one: 'tray',     many: 'trays',     weight: 835, count: 1, simpleHyd: 75, icon: '🫓' },
+};
+const SPEEDS = [
+  { pct: 20, desc: 'Faster rise · good for same-day baking' },
+  { pct: 15, desc: 'Balanced flavour and timing' },
+  { pct: 10, desc: 'Long, cold fermentation · deeper flavour' },
 ];
+// Common tins and trays (inside dimensions, cm)
+const TRAY_PRESETS = [
+  { id: 'p-20x20', name: 'Square tin',       shape: 'rect',  w: 20, l: 20 },
+  { id: 'p-23x33', name: 'Rectangular pan', shape: 'rect',  w: 23, l: 33 },
+  { id: 'p-28x38', name: 'Oven tray',        shape: 'rect',  w: 28, l: 38 },
+  { id: 'p-33x46', name: 'Large tray',       shape: 'rect',  w: 33, l: 46 },
+  { id: 'p-r24',   name: 'Round tin',        shape: 'round', d: 24 },
+  { id: 'p-r28',   name: 'Round tin',        shape: 'round', d: 28 },
+];
+// Dough per cm² of tray
+const THICK = {
+  thin:   { label: 'Thin',   g: 0.8 },
+  medium: { label: 'Medium', g: 1.1 },
+  thick:  { label: 'Thick',  g: 1.4 },
+};
+const KEY = { last: 'sourdough:last', recipes: 'sourdough:recipes', trays: 'sourdough:trays' };
 
-let bowls  = [];
-let bowlId = 0;
-let mxId   = 0;
-const advMx = [];
-// Mix-in values keyed by mix-in id, so re-rendering never loses what was typed
-const mxVals = {};
-function mxSet(id, field, v) { (mxVals[id] = mxVals[id] || { name:'', pct:'15' })[field] = v; calc(); }
+// Browser storage can be missing or blocked (private mode); never let that break the page
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+};
 
-// ── BOOT ──────────────────────────────────────────────────────────────────
-function init() {
-  addBowl();
-  addAdvBowl();
-  syncLbl('h',  'a-hyd',     '%');
-  syncLbl('s',  'a-salt',    '%', 1);
-  syncLbl('st', 'a-starter', '%');
-  calc();
+// ── STATE ─────────────────────────────────────────────────────────────────
+let uid = 0;   // ids for bowls and mix-ins; only ever increases so ids never repeat
+function newBowl(i) {
+  const b = {
+    id: ++uid, name: `Bowl ${i + 1}`,
+    counts:  { loaf: '2', baguette: '2', focaccia: '1' },
+    weights: { loaf: '950', baguette: '400' },
+    oneBowl: true,
+    mixins: [],
+    lev: { on: false, pct: '15' },
+    tray: { sel: 'p-23x33', name: '', shape: 'rect', w: '23', l: '33', d: '24' },
+    thick: 'medium', thickCustom: '1.1',
+  };
+  if (i === 1) b.mixins.push({ id: ++uid, name: 'walnuts', pct: '15' });
+  if (i === 2) b.mixins.push({ id: ++uid, name: 'olives',  pct: '15' });
+  return b;
+}
+function defaultState() {
+  return {
+    v: 1, mode: 'simple', type: 'loaf', speed: 1,
+    adv: { hyd: { loaf: '70', baguette: '70', focaccia: '75' }, salt: '2', levain: '15', blend: { w: '100', ww: '0', rye: '0' } },
+    oil: { on: false, pct: '4' },
+    bowls: [newBowl(0)],
+    recipeName: null, dirty: false,
+  };
+}
+const str = (v, d) => (v === undefined || v === null) ? d : String(v);
+
+// Rebuild a full, valid state from anything saved (older or partial data is fine)
+function sanitize(s) {
+  const out = defaultState();
+  if (!s || typeof s !== 'object') return out;
+  if (s.mode === 'advanced') out.mode = 'advanced';
+  if (TYPES[s.type]) out.type = s.type;
+  if ([0, 1, 2].includes(s.speed)) out.speed = s.speed;
+  if (s.adv && typeof s.adv === 'object') {
+    if (s.adv.hyd) for (const t in TYPES) out.adv.hyd[t] = str(s.adv.hyd[t], out.adv.hyd[t]);
+    out.adv.salt = str(s.adv.salt, out.adv.salt);
+    out.adv.levain = str(s.adv.levain, out.adv.levain);
+    if (s.adv.blend) for (const k of ['w', 'ww', 'rye']) out.adv.blend[k] = str(s.adv.blend[k], out.adv.blend[k]);
+  }
+  if (s.oil) { out.oil.on = !!s.oil.on; out.oil.pct = str(s.oil.pct, out.oil.pct); }
+  if (Array.isArray(s.bowls) && s.bowls.length) {
+    out.bowls = s.bowls.slice(0, 20).map((b, i) => {
+      const nb = newBowl(i);
+      b = b || {};
+      nb.name = str(b.name, nb.name);
+      if (b.counts)  for (const t in TYPES) nb.counts[t] = str(b.counts[t], nb.counts[t]);
+      if (b.weights) for (const t of ['loaf', 'baguette']) nb.weights[t] = str(b.weights[t], nb.weights[t]);
+      nb.oneBowl = b.oneBowl !== false;
+      nb.mixins = Array.isArray(b.mixins) ? b.mixins.map(m => ({ id: ++uid, name: str(m && m.name, ''), pct: str(m && m.pct, '15') })) : nb.mixins;
+      if (b.lev) nb.lev = { on: !!b.lev.on, pct: str(b.lev.pct, '15') };
+      if (b.tray) for (const k of ['sel', 'name', 'shape', 'w', 'l', 'd']) nb.tray[k] = str(b.tray[k], nb.tray[k]);
+      if (THICK[b.thick] || b.thick === 'custom') nb.thick = b.thick;
+      nb.thickCustom = str(b.thickCustom, nb.thickCustom);
+      return nb;
+    });
+  }
+  out.recipeName = typeof s.recipeName === 'string' ? s.recipeName : null;
+  out.dirty = !!s.dirty && !!out.recipeName;
+  return out;
 }
 
-// ── MODE ──────────────────────────────────────────────────────────────────
-function setMode(m) {
-  mode = m;
-  document.getElementById('btn-simple').classList.toggle('active', m === 'simple');
-  document.getElementById('btn-advanced').classList.toggle('active', m === 'advanced');
-  document.getElementById('p-simple-in').classList.toggle('gone', m !== 'simple');
-  document.getElementById('p-adv-loaf').classList.toggle('gone', m !== 'advanced');
-  document.getElementById('p-adv-pct').classList.toggle('gone', m !== 'advanced');
-  calc();
-}
+let state = defaultState();
 
-// ── 3-STEP ────────────────────────────────────────────────────────────────
-function setStep(n) {
-  stepVal = n;
-  [0,1,2].forEach(i => {
-    document.getElementById('slbl-'+i).classList.toggle('active', i===n);
-    document.getElementById('sdot-'+i).classList.toggle('active', i===n);
+// ── NUMBERS ───────────────────────────────────────────────────────────────
+const pos  = (v, d) => { const n = parseFloat(v); return isFinite(n) && n > 0 ? n : d; };   // > 0
+const non0 = (v, d) => { const n = parseFloat(v); return isFinite(n) && n >= 0 ? n : d; };  // ≥ 0
+const nice = n => (Math.round(n * 10) / 10).toString();
+
+// ── TRAYS ─────────────────────────────────────────────────────────────────
+function savedTrays() { return store.get(KEY.trays, []).filter(t => t && t.id); }
+function trayList() { return TRAY_PRESETS.concat(savedTrays().map(t => Object.assign({ saved: true }, t))); }
+function trayDims(t) {
+  const shape = t.shape === 'round' ? 'round' : 'rect';
+  const w = pos(t.w, 23), l = pos(t.l, 33), d = pos(t.d, 24);
+  const area = shape === 'round' ? Math.PI * d * d / 4 : w * l;
+  const dims = shape === 'round' ? `⌀ ${nice(d)} cm` : `${nice(w)} × ${nice(l)} cm`;
+  return { shape, w, l, d, area, dims };
+}
+function trayOptionLabel(t) { return `${t.name} ${trayDims(t).dims}`; }
+// The tray a bowl uses. Dimensions are copied into the bowl when a tray is
+// picked, so a recipe still works on a device that doesn't have that saved tray.
+function bowlTray(b) {
+  const found = b.tray.sel !== 'custom' && trayList().find(t => t.id === b.tray.sel);
+  const src = found || b.tray;
+  const td = trayDims(src);
+  const name = found ? found.name : (b.tray.name.trim() || '');
+  return Object.assign(td, { label: name ? `${name} ${td.dims}` : `${td.dims} tray`, found: !!found, saved: !!(found && found.saved) });
+}
+function thickG(b) { return b.thick === 'custom' ? pos(b.thickCustom, 1.1) : THICK[b.thick].g; }
+
+// ── RECIPE FROM STATE ─────────────────────────────────────────────────────
+function getBlend(st) {
+  const w = non0(st.adv.blend.w, 0), ww = non0(st.adv.blend.ww, 0), rye = non0(st.adv.blend.rye, 0);
+  return { w, ww, rye, ok: Math.abs(w + ww + rye - 100) < 0.01 };
+}
+function recipeFrom(st) {
+  const type = st.type, T = TYPES[type], adv = st.mode === 'advanced';
+  const hyd  = adv ? non0(st.adv.hyd[type], T.simpleHyd) / 100 : T.simpleHyd / 100;
+  const salt = adv ? non0(st.adv.salt, 2) / 100 : 0.02;
+  const baseLev = adv ? pos(st.adv.levain, 15) / 100 : SPEEDS[st.speed].pct / 100;
+  const bl = getBlend(st);
+  const blend = adv && bl.ok && (bl.ww || bl.rye) ? bl : null;
+  const oil = type === 'focaccia' && st.oil.on ? non0(st.oil.pct, 0) / 100 : 0;
+  const bowls = st.bowls.map((b, i) => {
+    let lwt, tray = null;
+    if (type === 'focaccia') {
+      const td = bowlTray(b);
+      tray = { label: td.label, area: td.area };
+      lwt = Math.max(1, Math.round(td.area * thickG(b)));
+    } else {
+      lwt = pos(b.weights[type], T.weight);
+    }
+    return {
+      name: b.name.trim() || `Bowl ${i + 1}`,
+      loaves: Math.max(1, Math.round(pos(b.counts[type], T.count))),
+      lwt, oneBowl: !!b.oneBowl, tray,
+      levainPct: adv && b.lev.on ? pos(b.lev.pct, 15) / 100 : baseLev,
+      mixins: b.mixins.map(m => ({ name: m.name.trim() || 'Mix-in', pct: non0(m.pct, 0) })),
+    };
   });
-  document.getElementById('step-fill').style.width = (n*50)+'%';
-  document.getElementById('step-desc').textContent = STEP_DESC[n];
-  calc();
+  return { type, hyd, salt, oil, blend, levainPct: baseLev, bowls };
 }
 
-// ── BREAD TYPE ─────────────────────────────────────────────────────────────────
-function setBreadType(t) {
-  breadType = t;
-  document.getElementById('btn-type-loaf').classList.toggle('active',     t === 'loaf');
-  document.getElementById('btn-type-baguette').classList.toggle('active', t === 'baguette');
-  const isBag = t === 'baguette';
-  const newDef = isBag ? 400 : 950;
-  document.getElementById('lbl-default-size').textContent   = isBag ? 'Standard Baguette Size' : 'Standard Loaf Size';
-  document.getElementById('lbl-default-weight').textContent = isBag ? 'Default weight per baguette (g)' : 'Default weight per loaf (g)';
-  document.getElementById('lbl-bowls-title').textContent    = isBag ? 'Batches' : 'Bowls';
-  const addBtn = document.querySelector('#p-simple-in .btn-add-bowl');
-  if (addBtn) addBtn.textContent = isBag ? '+ Add another batch' : '+ Add another bowl';
-  const dwEl = document.getElementById('s-default-weight');
-  if (dwEl && (parseFloat(dwEl.value) === 950 || parseFloat(dwEl.value) === 400)) dwEl.value = newDef;
-  bowls.forEach(b => {
-    const el = document.getElementById('bowl-weight-' + b.id);
-    if (el && el.dataset.def === '1') el.value = newDef;
-  });
-  saveBowlState();
-  renderBowls();
+// ── CHANGES ───────────────────────────────────────────────────────────────
+let saveTimer = null;
+function saveLast() { clearTimeout(saveTimer); saveTimer = null; store.set(KEY.last, state); }
+function changed() {
+  if (state.recipeName) state.dirty = true;
+  clearTimeout(saveTimer); saveTimer = setTimeout(saveLast, 250);
+  updateRecipesBtn();
   calc();
 }
+window.addEventListener('pagehide', () => { if (saveTimer) saveLast(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) saveLast(); });
 
-// ── BOWLS ─────────────────────────────────────────────────────────────────
-function getDefaultWeight() {
-  const el = document.getElementById('s-default-weight');
-  const fallback = breadType === 'baguette' ? 400 : 950;
-  return el ? (parseFloat(el.value) || fallback) : fallback;
-}
-function applyDefaultWeight() {
-  const dw = getDefaultWeight();
-  bowls.forEach(b => {
-    const el = document.getElementById('bowl-weight-' + b.id);
-    if (el && el.dataset.def === '1') el.value = dw;
-  });
-  calc();
-}
-function saveBowlState() {
-  bowls.forEach(b => {
-    const ln = document.getElementById('bowl-loaves-'+b.id);
-    const wt = document.getElementById('bowl-weight-'+b.id);
-    const ob = document.getElementById('bowl-onebowl-'+b.id);
-    const nm = document.getElementById('bowl-name-'+b.id);
-    if (ln) b._loaves  = ln.value;
-    if (wt) { b._weight = wt.value; b._wtDef = wt.dataset.def; }
-    if (ob) b._onebowl = ob.checked;
-    if (nm) b._name   = nm.value;
-  });
-}
+function setMode(m)  { state.mode = m; renderAll(); changed(); }
+function setType(t)  { state.type = t; renderAll(); changed(); }
+function setSpeed(n) { state.speed = n; renderSettings(); changed(); }
+function setAdv(k, v) { if (k === 'hyd') state.adv.hyd[state.type] = v; else state.adv[k] = v; renderSliderLabels(); changed(); }
+function setBlend(k, v) { state.adv.blend[k] = v; changed(); }
+function setOil(on) { state.oil.on = on; renderSettings(); changed(); }
+function setOilPct(v) { state.oil.pct = v; changed(); }
+
+const findB = id => state.bowls.find(b => b.id === id);
+// Update one bowl. Re-render the cards only when the layout changes (keeps typing focus).
+function bset(id, fn, rerender) { const b = findB(id); if (!b) return; fn(b); if (rerender) renderBowls(); changed(); }
+function mset(bid, mid, k, v) { const b = findB(bid); const m = b && b.mixins.find(x => x.id === mid); if (m) { m[k] = v; changed(); } }
+
 function addBowl() {
-  saveBowlState();
-  const newIdx = bowls.length; // 0-based index of the bowl being added
-  const id = ++bowlId;
-  const bowl = { id, mixins: [], _loaves:'2', _weight:String(getDefaultWeight()), _wtDef:'1', _onebowl:true };
-  // Bowl 2 (index 1) defaults to 15% walnuts; Bowl 3 (index 2) defaults to 15% olives
-  if (newIdx === 1) { const mid = ++mxId; bowl.mixins.push(mid); mxVals[mid] = { name:'walnuts', pct:'15' }; }
-  if (newIdx === 2) { const mid = ++mxId; bowl.mixins.push(mid); mxVals[mid] = { name:'olives',  pct:'15' }; }
-  bowls.push(bowl);
-  renderBowls();
-  calc();
+  const last = state.bowls[state.bowls.length - 1];
+  const nb = newBowl(state.bowls.length);
+  if (last) {   // new bowls start with the same size as the last one
+    nb.counts = Object.assign({}, last.counts); nb.weights = Object.assign({}, last.weights);
+    nb.tray = Object.assign({}, last.tray); nb.thick = last.thick; nb.thickCustom = last.thickCustom; nb.oneBowl = last.oneBowl;
+  }
+  state.bowls.push(nb); renderBowls(); changed();
 }
 function removeBowl(id) {
-  if (bowls.length <= 1) return;
-  saveBowlState();
-  bowls = bowls.filter(b => b.id !== id);
-  renderBowls();
-  calc();
+  if (state.bowls.length < 2) return;
+  state.bowls = state.bowls.filter(b => b.id !== id); renderBowls(); changed();
 }
+function addMixin(bid) {
+  const b = findB(bid); const m = { id: ++uid, name: '', pct: '15' };
+  b.mixins.push(m); renderBowls(); changed();
+  const el = document.getElementById('mx-n-' + m.id); if (el) el.focus();
+}
+function removeMixin(bid, mid) { const b = findB(bid); b.mixins = b.mixins.filter(m => m.id !== mid); renderBowls(); changed(); }
+
+function setTray(bid, sel) {
+  const b = findB(bid);
+  if (sel === 'custom') { b.tray.sel = 'custom'; b.tray.name = ''; }
+  else {
+    const t = trayList().find(x => x.id === sel);
+    if (t) b.tray = { sel, name: t.name, shape: t.shape || 'rect', w: str(t.w, b.tray.w), l: str(t.l, b.tray.l), d: str(t.d, b.tray.d) };
+  }
+  renderBowls(); changed();
+}
+function saveTray(bid) {
+  const b = findB(bid), msg = document.getElementById('b-traymsg-' + bid);
+  const name = b.tray.name.trim();
+  if (!name) { msg.textContent = 'Give the tray a name first.'; msg.className = 'msg err'; return; }
+  const td = trayDims(b.tray);
+  const t = { id: 'u' + Date.now().toString(36), name, shape: td.shape };
+  if (td.shape === 'round') t.d = nice(td.d); else { t.w = nice(td.w); t.l = nice(td.l); }
+  const list = savedTrays().filter(x => x.name.toLowerCase() !== name.toLowerCase());
+  list.push(t);
+  if (!store.set(KEY.trays, list)) { msg.textContent = 'Couldn’t save — this browser is blocking storage.'; msg.className = 'msg err'; return; }
+  b.tray.sel = t.id; renderBowls(); changed();
+}
+function removeSavedTray(bid, id) {
+  store.set(KEY.trays, savedTrays().filter(t => t.id !== id));
+  state.bowls.forEach(b => { if (b.tray.sel === id) b.tray.sel = 'custom'; });   // keep its size as a custom tray
+  renderBowls(); changed();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function renderAll() { renderSettings(); renderBowls(); updateRecipesBtn(); }
+
+function renderSettings() {
+  const st = state, T = TYPES[st.type], adv = st.mode === 'advanced';
+  document.getElementById('btn-simple').classList.toggle('active', !adv);
+  document.getElementById('btn-advanced').classList.toggle('active', adv);
+  for (const t in TYPES) document.getElementById('btn-type-' + t).classList.toggle('active', t === st.type);
+  document.getElementById('hicon').textContent = T.icon;
+  document.getElementById('simple-settings').classList.toggle('gone', adv);
+  document.getElementById('adv-settings').classList.toggle('gone', !adv);
+  // Simple
+  [0, 1, 2].forEach(i => {
+    document.getElementById('slbl-' + i).classList.toggle('active', i === st.speed);
+    document.getElementById('sdot-' + i).classList.toggle('active', i === st.speed);
+  });
+  document.getElementById('step-fill').style.width = `calc(${st.speed * 50}% - ${st.speed * 8}px)`;
+  document.getElementById('step-desc').textContent = SPEEDS[st.speed].desc;
+  document.getElementById('simple-pcts').textContent = `Simple mode uses ${T.simpleHyd}% hydration and 2% salt. Switch to Advanced to change them.`;
+  // Advanced
+  document.getElementById('a-hyd').value = non0(st.adv.hyd[st.type], T.simpleHyd);
+  document.getElementById('a-salt').value = non0(st.adv.salt, 2);
+  document.getElementById('a-starter').value = pos(st.adv.levain, 15);
+  for (const [k, id] of [['w', 'fb-white'], ['ww', 'fb-ww'], ['rye', 'fb-rye']]) document.getElementById(id).value = st.adv.blend[k];
+  renderSliderLabels();
+  // Oil (focaccia only)
+  const foc = st.type === 'focaccia';
+  document.getElementById('oil-settings').classList.toggle('gone', !foc);
+  document.getElementById('oil-on').checked = st.oil.on;
+  document.getElementById('oil-pct').value = st.oil.pct;
+  document.getElementById('oil-pct-field').classList.toggle('gone', !st.oil.on);
+}
+function renderSliderLabels() {
+  document.getElementById('lbl-h').textContent  = Math.round(non0(state.adv.hyd[state.type], 70)) + '%';
+  document.getElementById('lbl-s').textContent  = non0(state.adv.salt, 2).toFixed(1) + '%';
+  document.getElementById('lbl-st').textContent = Math.round(pos(state.adv.levain, 15)) + '%';
+}
+
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function seg(items, active, onclick) {
+  return `<div class="mode-toggle seg-sm" role="group">${items.map(([v, label]) =>
+    `<button class="mode-btn ${v === active ? 'active' : ''}" onclick="${onclick(v)}">${label}</button>`).join('')}</div>`;
+}
+
 function renderBowls() {
-  const c = document.getElementById('bowl-cards');
-  c.innerHTML = '';
-  bowls.forEach((b, idx) => {
-    const loavesVal  = b._loaves  !== undefined ? b._loaves  : '2';
-    const weightVal  = b._weight  !== undefined ? b._weight  : String(getDefaultWeight());
-    const wtDef      = b._wtDef   !== undefined ? b._wtDef   : '1';
-    const oneBowlChk = b._onebowl !== undefined ? b._onebowl : true;
-    const nameVal    = b._name    !== undefined ? b._name    : ('Bowl '+(idx+1));
-    const card = document.createElement('div');
-    card.className = 'bowl-card';
-    card.innerHTML = `
-      <div class="bowl-header">
-        <div class="bowl-title">
-          <input type="text" id="bowl-name-${b.id}" value="${esc(nameVal)}" placeholder="Bowl name" oninput="calc()">
-        </div>
-        ${bowls.length > 1 ? `<button class="btn-rm-bowl" onclick="removeBowl(${b.id})">Remove</button>` : ''}
-      </div>
-      <div class="frow">
-        <div class="field"><label>${breadType==='baguette'?'Number of baguettes':'Number of loaves'}</label>
-          <input type="number" id="bowl-loaves-${b.id}" value="${loavesVal}" min="1" max="99" oninput="calc()"></div>
-        <div class="field"><label>${breadType==='baguette'?'Weight per baguette (g)':'Weight per loaf (g)'}</label>
-          <input type="number" id="bowl-weight-${b.id}" value="${weightVal}" min="100" max="9999" data-def="${wtDef}" oninput="this.dataset.def='0';calc()"></div>
-      </div>
-      <label class="tog-wrap">
-        <input type="checkbox" id="bowl-onebowl-${b.id}" onchange="calc()" ${oneBowlChk ? 'checked' : ''}>
-        <span class="pip"></span>
-        <span class="tog-label">${breadType==='baguette'?'Mix in one batch':'Mix in one bowl'}</span>
-      </label>
-      <div class="ptitle-sm" style="margin-top:4px">Mix-ins <span class="unit-note">(% of flour · optional)</span></div>
-      <div id="bowl-mixins-${b.id}"></div>
-      <button class="btn-add" onclick="addBowlMixin(${b.id})">+ Add mix-in</button>
-    `;
-    c.appendChild(card);
-    renderBowlMixins(b.id, b.mixins);
-  });
-}
-
-function addBowlMixin(bid) {
-  const b = bowls.find(x => x.id===bid); if (!b) return;
-  const mid = ++mxId; mxVals[mid] = { name:'', pct:'15' };
-  b.mixins.push(mid);
-  renderBowlMixins(bid, b.mixins);
-  calc();
-}
-function removeBowlMixin(bid, mid) {
-  const b = bowls.find(x => x.id===bid); if (!b) return;
-  b.mixins = b.mixins.filter(x => x!==mid);
-  renderBowlMixins(bid, b.mixins);
-  calc();
-}
-function renderBowlMixins(bid, mxList) {
-  const el = document.getElementById('bowl-mixins-'+bid); if (!el) return;
-  el.innerHTML = '';
-  mxList.forEach(id => {
-    const v = mxVals[id] || { name:'', pct:'15' };
-    const d = document.createElement('div');
-    d.className = 'mx-row';
-    d.innerHTML = `
-      <input type="text"   id="bmx-n-${bid}-${id}" placeholder="e.g. walnuts" value="${esc(v.name)}" oninput="mxSet(${id},'name',this.value)">
-      <div class="mx-pct"><input type="number" id="bmx-p-${bid}-${id}" value="${esc(String(v.pct))}" min="0" max="200" step="0.5" oninput="mxSet(${id},'pct',this.value)"></div>
-      <button class="btn-rm" onclick="removeBowlMixin(${bid},${id})">×</button>
-    `;
-    el.appendChild(d);
-  });
-}
-function mxRead(id) {
-  const v = mxVals[id] || {};
-  return { name: String(v.name || '').trim() || 'Mix-in', pct: parseFloat(v.pct) || 0 };
-}
-function getBowlMixins(bid, mxList) { return mxList.map(mxRead); }
-
-// ── ADV MIX-INS ───────────────────────────────────────────────────────────
-function addMixin() {
-  const mid = ++mxId; mxVals[mid] = { name:'', pct:'15' };
-  advMx.push(mid);
-  renderAdvMixins();
-  calc();
-}
-function removeAdvMixin(id) {
-  const i = advMx.indexOf(id); if (i>=0) advMx.splice(i,1);
-  renderAdvMixins(); calc();
-}
-function renderAdvMixins() {
-  const el = document.getElementById('a-mixins'); el.innerHTML='';
-  advMx.forEach(id => {
-    const v = mxVals[id] || { name:'', pct:'15' };
-    const d = document.createElement('div'); d.className='mx-row';
-    d.innerHTML=`
-      <input type="text"   id="mx-n-${id}" placeholder="e.g. walnuts" value="${esc(v.name)}" oninput="mxSet(${id},'name',this.value)">
-      <div class="mx-pct"><input type="number" id="mx-p-${id}" value="${esc(String(v.pct))}" min="0" max="200" step="0.5" oninput="mxSet(${id},'pct',this.value)"></div>
-      <button class="btn-rm" onclick="removeAdvMixin(${id})">×</button>
-    `;
-    el.appendChild(d);
-  });
-}
-function getAdvMixins() { return advMx.map(mxRead); }
-
-// ── FLOUR BLEND ───────────────────────────────────────────────────────────
-function getBlend() {
-  const w=parseFloat(document.getElementById('fb-white').value)||0;
-  const ww=parseFloat(document.getElementById('fb-ww').value)||0;
-  const rye=parseFloat(document.getElementById('fb-rye').value)||0;
-  const sum=w+ww+rye, ok=Math.abs(sum-100)<0.01;
-  document.getElementById('blend-err').textContent = ok?'':
-    `Totals ${sum.toFixed(1)}% — must equal 100%`;
-  document.getElementById('seg-w').style.width=w+'%';
-  document.getElementById('seg-ww').style.width=ww+'%';
-  document.getElementById('seg-rye').style.width=rye+'%';
-  return {ok,w,ww,rye};
-}
-
-function syncLbl(lbl,inputId,suffix,decimals) {
-  const v=parseFloat(document.getElementById(inputId).value);
-  document.getElementById('lbl-'+lbl).textContent=(decimals!=null?v.toFixed(decimals):v)+suffix;
-}
-
-// ── CALCULATION ───────────────────────────────────────────────────────────
-function calc() {
-  if (mode==='simple') calcSimple(); else calcAdv();
-  updateGuideLink();
-}
-
-// ── COMPUTE one bowl (maths lives in sourdough-core.js, shared with the guide) ──
-const computeBowl = Sourdough.computeBowl;
-
-// ── SIMPLE ────────────────────────────────────────────────────────────────
-function calcSimple() {
-  const levainPct = STEP_PCT[stepVal];
-  const hyd=0.70, salt=0.02;
-  const rc=document.getElementById('r-content');
-  rc.innerHTML='';
-
-  // Gather bowl data
-  const bdata = bowls.map(b => {
-    const loaves  = rInt('bowl-loaves-'+b.id,1);
-    const lwt     = rFlt('bowl-weight-'+b.id,getDefaultWeight());
-    const oneBowl = document.getElementById('bowl-onebowl-'+b.id)?.checked||false;
-    const name    = document.getElementById('bowl-name-'+b.id)?.value.trim()||'Bowl '+b.id;
-    const mixins  = getBowlMixins(b.id, b.mixins);
-    const result  = computeBowl({loaves,lwt,oneBowl,hyd,salt,levainPct,mixins});
-    return {name, loaves, lwt, oneBowl, mixins, result};
-  });
-
-  rc.appendChild(buildTable(bdata, levainPct, hyd, salt, breadType));
-
-  const badge=document.createElement('div');
-  const bTypeLabel = breadType === 'baguette' ? 'baguette' : 'loaf';
-  badge.innerHTML=`<span class="rbadge">${Math.round(hyd*100)}% hydration · ${(salt*100).toFixed(1)}% salt · ${Math.round(levainPct*100)}% levain · ${bTypeLabel}</span>`;
-  rc.appendChild(badge);
-}
-
-// ── ADVANCED BOWLS ────────────────────────────────────────────────────────
-let advBowls  = [];
-let advBowlId = 0;
-
-function saveAdvBowlState() {
-  advBowls.forEach(b => {
-    const ln  = document.getElementById('ab-loaves-'+b.id);
-    const wt  = document.getElementById('ab-weight-'+b.id);
-    const ob  = document.getElementById('ab-onebowl-'+b.id);
-    const nm  = document.getElementById('ab-name-'+b.id);
-    const ovr = document.getElementById('ab-ovr-'+b.id);
-    const ovv = document.getElementById('ab-ovr-val-'+b.id);
-    if (ln)  b._loaves  = ln.value;
-    if (wt)  b._weight  = wt.value;
-    if (ob)  b._onebowl = ob.checked;
-    if (nm)  b._name    = nm.value;
-    if (ovr) b._ovr     = ovr.checked;
-    if (ovv) b._ovrVal  = ovv.value;
-  });
-}
-function addAdvBowl() {
-  saveAdvBowlState();
-  advBowls.push({ id: ++advBowlId, _loaves:'2', _weight:'850', _onebowl:true, _ovr:false, _ovrVal:'15' });
-  renderAdvBowls();
-  calc();
-}
-function removeAdvBowl(id) {
-  if (advBowls.length <= 1) return;
-  saveAdvBowlState();
-  advBowls = advBowls.filter(b => b.id !== id);
-  renderAdvBowls();
-  calc();
-}
-function renderAdvBowls() {
-  const c = document.getElementById('adv-bowl-cards');
-  c.innerHTML = '';
-  advBowls.forEach((b, idx) => {
-    const loavesVal  = b._loaves  !== undefined ? b._loaves  : '2';
-    const weightVal  = b._weight  !== undefined ? b._weight  : '850';
-    const oneBowlChk = b._onebowl !== undefined ? b._onebowl : true;
-    const nameVal    = b._name    !== undefined ? b._name    : ('Bowl '+(idx+1));
-    const ovrChk     = b._ovr     || false;
-    const ovrVal     = b._ovrVal  || '15';
-    const card = document.createElement('div');
-    card.className = 'bowl-card';
-    card.innerHTML = `
-      <div class="bowl-header">
-        <div class="bowl-title">
-          <input type="text" id="ab-name-${b.id}" value="${esc(nameVal)}" placeholder="Bowl name" oninput="calc()">
-        </div>
-        ${advBowls.length > 1 ? `<button class="btn-rm-bowl" onclick="removeAdvBowl(${b.id})">Remove</button>` : ''}
-      </div>
-      <div class="frow">
-        <div class="field"><label>Number of loaves</label>
-          <input type="number" id="ab-loaves-${b.id}" value="${loavesVal}" min="1" max="99" oninput="calc()"></div>
-        <div class="field"><label>Weight per loaf (g)</label>
-          <input type="number" id="ab-weight-${b.id}" value="${weightVal}" min="100" max="9999" oninput="calc()"></div>
-      </div>
-      <label class="tog-wrap">
-        <input type="checkbox" id="ab-onebowl-${b.id}" onchange="calc()" ${oneBowlChk ? 'checked' : ''}>
-        <span class="pip"></span>
-        <span class="tog-label">Mix in one bowl</span>
-      </label>
-      <div style="margin-bottom:14px">
-        <div class="lbl" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
-          Levain override
-          <label class="tog-wrap inline-tog">
-            <input type="checkbox" id="ab-ovr-${b.id}" onchange="toggleAdvLevainOverride(${b.id})" ${ovrChk ? 'checked' : ''}>
-            <span class="pip"></span>
-            <span class="tog-label">Override global</span>
-          </label>
-        </div>
-        <div id="ab-ovr-wrap-${b.id}" style="display:${ovrChk ? 'block' : 'none'}">
-          <div class="sl" style="margin-bottom:0">
-            <div class="sl-lbl">Levain <span id="ab-ovr-lbl-${b.id}">${ovrVal}%</span></div>
-            <input type="range" id="ab-ovr-val-${b.id}" min="5" max="60" value="${ovrVal}"
-              oninput="document.getElementById('ab-ovr-lbl-${b.id}').textContent=this.value+'%';calc()">
+  const st = state, type = st.type, T = TYPES[type], adv = st.mode === 'advanced', multi = st.bowls.length > 1;
+  document.getElementById('bowl-cards').innerHTML = st.bowls.map((b, i) => {
+    const id = b.id;
+    let size;
+    if (type === 'focaccia') {
+      const trays = trayList();
+      const sel = trays.some(t => t.id === b.tray.sel) ? b.tray.sel : 'custom';
+      const opts = trays.map(t => `<option value="${t.id}"${t.id === sel ? ' selected' : ''}>${esc(trayOptionLabel(t))}${t.saved ? ' ★' : ''}</option>`).join('')
+                 + `<option value="custom"${sel === 'custom' ? ' selected' : ''}>Custom size…</option>`;
+      const td = trayDims(b.tray);
+      const custom = sel !== 'custom' ? '' : `
+        <div class="custom-tray">
+          ${seg([['rect', 'Rectangle'], ['round', 'Round']], td.shape, v => `bset(${id}, b=>b.tray.shape='${v}', true)`)}
+          ${td.shape === 'round'
+            ? `<div class="field"><label for="b-trayd-${id}">Diameter (cm)</label><input type="number" id="b-trayd-${id}" value="${esc(b.tray.d)}" min="5" max="100" step="0.5" oninput="bset(${id}, b=>b.tray.d=this.value)" style="max-width:150px"></div>`
+            : `<div class="frow">
+                 <div class="field"><label for="b-trayw-${id}">Width (cm)</label><input type="number" id="b-trayw-${id}" value="${esc(b.tray.w)}" min="5" max="100" step="0.5" oninput="bset(${id}, b=>b.tray.w=this.value)"></div>
+                 <div class="field"><label for="b-trayl-${id}">Length (cm)</label><input type="number" id="b-trayl-${id}" value="${esc(b.tray.l)}" min="5" max="100" step="0.5" oninput="bset(${id}, b=>b.tray.l=this.value)"></div>
+               </div>`}
+          <div class="save-tray">
+            <input type="text" id="b-trayname-${id}" value="${esc(b.tray.name)}" placeholder="Name, e.g. My big tray" maxlength="40" oninput="bset(${id}, b=>b.tray.name=this.value)"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();saveTray(${id})}">
+            <button class="btn-ghost" onclick="saveTray(${id})">Save tray</button>
           </div>
+          <div class="msg" id="b-traymsg-${id}"></div>
+        </div>`;
+      const savedSel = sel !== 'custom' && trays.find(t => t.id === sel).saved;
+      size = `
+        <div class="field"><label for="b-tray-${id}">Tray</label><select id="b-tray-${id}" onchange="setTray(${id}, this.value)">${opts}</select></div>
+        ${custom}
+        ${savedSel ? `<button class="linkbtn" onclick="removeSavedTray(${id}, '${sel}')">Remove this saved tray</button>` : ''}
+        <div class="field"><label for="b-count-${id}">Number of trays</label><input type="number" id="b-count-${id}" value="${esc(b.counts.focaccia)}" min="1" max="50" oninput="bset(${id}, b=>b.counts.focaccia=this.value)" style="max-width:150px"></div>
+        <div class="lbl">Thickness</div>
+        ${seg([['thin', 'Thin'], ['medium', 'Medium'], ['thick', 'Thick'], ['custom', 'Custom']], b.thick, v => `bset(${id}, b=>b.thick='${v}', true)`)}
+        ${b.thick === 'custom' ? `<div class="field"><label for="b-thick-${id}">Dough per cm² of tray (g)</label><input type="number" id="b-thick-${id}" value="${esc(b.thickCustom)}" min="0.3" max="3" step="0.05" oninput="bset(${id}, b=>b.thickCustom=this.value)" style="max-width:150px"></div>` : ''}
+        <div class="tray-info" id="b-trayinfo-${id}"></div>`;
+    } else {
+      size = `
+        <div class="frow">
+          <div class="field"><label for="b-count-${id}">${type === 'baguette' ? 'Baguettes' : 'Loaves'}</label><input type="number" id="b-count-${id}" value="${esc(b.counts[type])}" min="1" max="50" oninput="bset(${id}, b=>b.counts.${type}=this.value)"></div>
+          <div class="field"><label for="b-weight-${id}">Weight per ${T.one} (g)</label><input type="number" id="b-weight-${id}" value="${esc(b.weights[type])}" placeholder="${T.weight}" min="50" max="9999" oninput="bset(${id}, b=>b.weights.${type}=this.value)"></div>
+        </div>`;
+    }
+    const lev = !adv ? '' : `
+      <label class="tog-wrap"><input type="checkbox" id="b-levon-${id}"${b.lev.on ? ' checked' : ''} onchange="bset(${id}, b=>b.lev.on=this.checked, true)"><span class="pip"></span><span class="tog-label">Own levain % for this bowl</span></label>
+      ${b.lev.on ? `<div class="field"><label for="b-lev-${id}">Levain (% of flour)</label><div class="mx-pct" style="max-width:150px"><input type="number" id="b-lev-${id}" value="${esc(b.lev.pct)}" min="1" max="60" oninput="bset(${id}, b=>b.lev.pct=this.value)"></div></div>` : ''}`;
+    const mixins = b.mixins.map(m => `
+      <div class="mx-row">
+        <input type="text" id="mx-n-${m.id}" value="${esc(m.name)}" placeholder="e.g. olives" aria-label="Mix-in name" oninput="mset(${id}, ${m.id}, 'name', this.value)">
+        <div class="mx-pct"><input type="number" id="mx-p-${m.id}" value="${esc(m.pct)}" min="0" max="200" step="0.5" aria-label="Mix-in percent" oninput="mset(${id}, ${m.id}, 'pct', this.value)"></div>
+        <button class="btn-rm" onclick="removeMixin(${id}, ${m.id})" aria-label="Remove mix-in">×</button>
+      </div>`).join('');
+    return `
+      <div class="bowl-card" id="bowl-${id}">
+        <div class="bowl-header">
+          <div class="bowl-title"><input type="text" id="b-name-${id}" value="${esc(b.name)}" placeholder="Bowl ${i + 1}" aria-label="Bowl name" maxlength="40" oninput="bset(${id}, b=>b.name=this.value)"></div>
+          ${multi ? `<button class="btn-rm-bowl" onclick="removeBowl(${id})">Remove</button>` : ''}
         </div>
-      </div>
-    `;
-    c.appendChild(card);
-  });
-}
-function toggleAdvLevainOverride(bid) {
-  const checked = document.getElementById('ab-ovr-'+bid).checked;
-  document.getElementById('ab-ovr-wrap-'+bid).style.display = checked ? 'block' : 'none';
-  calc();
-}
-function getAdvBowlLevain(bid, globalPct) {
-  const ovr = document.getElementById('ab-ovr-'+bid);
-  if (ovr && ovr.checked) return rFlt('ab-ovr-val-'+bid, globalPct*100) / 100;
-  return globalPct;
+        ${size}
+        <label class="tog-wrap"><input type="checkbox" id="b-one-${id}"${b.oneBowl ? ' checked' : ''} onchange="bset(${id}, b=>b.oneBowl=this.checked)"><span class="pip"></span><span class="tog-label">Mix all ${T.many} in one bowl</span></label>
+        ${lev}
+        <div class="lbl">Mix-ins <span class="unit-note">(% of flour)</span></div>
+        <div id="b-mx-${id}">${mixins}</div>
+        <button class="btn-add" onclick="addMixin(${id})">+ Add mix-in</button>
+      </div>`;
+  }).join('');
 }
 
-// ── ADVANCED ──────────────────────────────────────────────────────────────
-function calcAdv() {
-  const hyd       = rFlt('a-hyd',70)/100;
-  const salt      = rFlt('a-salt',2)/100;
-  const globalLev = rFlt('a-starter',15)/100;
-  const blend     = getBlend();
-  const mixins    = getAdvMixins();
+// ── CALCULATION & RESULTS ─────────────────────────────────────────────────
+let plan = null;
+function calc() {
+  const recipe = recipeFrom(state);
+  plan = Sourdough.computeRecipe(recipe);
 
-  const bdata = advBowls.map(b => {
-    const loaves    = rInt('ab-loaves-'+b.id, 1);
-    const lwt       = rFlt('ab-weight-'+b.id, 850);
-    const oneBowl   = document.getElementById('ab-onebowl-'+b.id)?.checked || false;
-    const name      = document.getElementById('ab-name-'+b.id)?.value.trim() || ('Bowl '+b.id);
-    const levainPct = getAdvBowlLevain(b.id, globalLev);
-    const result    = computeBowl({loaves,lwt,oneBowl,hyd,salt,levainPct,mixins,blend: blend.ok ? blend : null});
-    return {name, loaves, lwt, oneBowl, mixins, levainPct, result};
+  // Blend bar and error (advanced)
+  const bl = getBlend(state);
+  const tot = bl.w + bl.ww + bl.rye || 1;
+  document.getElementById('seg-w').style.width   = (bl.w / tot * 100) + '%';
+  document.getElementById('seg-ww').style.width  = (bl.ww / tot * 100) + '%';
+  document.getElementById('seg-rye').style.width = (bl.rye / tot * 100) + '%';
+  document.getElementById('blend-err').textContent = bl.ok ? '' : `Blend adds up to ${nice(bl.w + bl.ww + bl.rye)}% — it needs to be 100%. Using all white flour until then.`;
+
+  // Dough per tray (focaccia)
+  plan.bowls.forEach((pb, i) => {
+    const el = document.getElementById('b-trayinfo-' + state.bowls[i].id);
+    if (el && pb.tray) el.innerHTML = `<strong>${Sourdough.fmt(pb.lwt)} g</strong> of dough per tray · ${Math.round(pb.tray.area)} cm² × ${nice(thickG(state.bowls[i]))} g/cm²`;
   });
 
   const rc = document.getElementById('r-content');
-  rc.innerHTML = '';
-  rc.appendChild(buildTable(bdata, globalLev, hyd, salt, 'loaf'));
-
-  const badge = document.createElement('div');
-  badge.innerHTML = `<span class="rbadge">${Math.round(hyd*100)}% hydration · ${(salt*100).toFixed(1)}% salt · ${Math.round(globalLev*100)}% levain (global)</span>`;
-  rc.appendChild(badge);
+  rc.innerHTML = buildTable(plan);
+  document.getElementById('guide-link').href = 'guide.html?' + Sourdough.encodeRecipe(recipe);
 }
 
-// ── BUILD TABLE ───────────────────────────────────────────────────────────
-// bdata = [{ name, loaves, lwt, oneBowl, mixins:[{name,pct}], levainPct?, result }]
-// type  = 'loaf' | 'baguette' (wording only)
-// Columns for bowls not mixed in one bowl show ONE loaf's quantities; the
-// "All bowls" column always shows the full bake (per-loaf × number of loaves).
-function buildTable(bdata, levainPct, hyd, salt, type) {
-  const multi = bdata.length > 1;
-  const isBag = type === 'baguette';
-  const ncols = bdata.length + 1 + (multi ? 1 : 0);
-  const factor = b => b.oneBowl ? 1 : b.loaves;   // to scale a column to its full bake
-
-  // Mix-ins: merge same-named entries (case-insensitive) within each bowl
+// Columns: one per bowl, plus "All bowls" (the full bake) when there are several.
+// A bowl not mixed in one bowl shows ONE piece's quantities; "All bowls" scales it up.
+function buildTable(plan) {
+  const r = plan.recipe, T = TYPES[r.type], bowls = plan.bowls, multi = bowls.length > 1;
+  const ncols = bowls.length + 1 + (multi ? 1 : 0);
+  const fmt = Sourdough.fmt;
   const mixKey = n => n.trim().toLowerCase();
-  const allMixins = [];                            // [{key, label}]
-  bdata.forEach(b => b.result.mixins.forEach(m => {
-    if (!allMixins.some(x => x.key === mixKey(m.name))) allMixins.push({ key: mixKey(m.name), label: m.name });
-  }));
-  const mixG = (b, key) => b.result.mixins.filter(m => mixKey(m.name) === key).reduce((s,m)=>s+m.g, 0);
+  const allMixins = [];
+  bowls.forEach(b => b.result.mixins.forEach(m => { if (!allMixins.some(x => x.key === mixKey(m.name))) allMixins.push({ key: mixKey(m.name), label: m.name }); }));
+  const mixG = (b, key) => b.result.mixins.filter(m => mixKey(m.name) === key).reduce((s, m) => s + m.g, 0);
 
-  // One table row: label, per-column getter, options
-  const row = (label, get, {cls='', isSalt=false, dashZero=false} = {}) => {
+  const row = (label, get, { cls = '', isSalt = false, dashZero = false } = {}) => {
     let h = `<tr><td class="col-lbl ${cls}">${label}</td>`, tot = 0;
-    bdata.forEach(b => {
-      const g = get(b); tot += g * factor(b);
+    bowls.forEach(b => {
+      const g = get(b); tot += g * b.factor;
       h += (dashZero && !g) ? `<td class="val ${cls}">–<span class="u">&nbsp;&nbsp;</span></td>`
-                            : `<td class="val ${cls}">${fmt(g,isSalt)}<span class="u"> g</span></td>`;
+                            : `<td class="val ${cls}">${fmt(g, isSalt)}<span class="u"> g</span></td>`;
     });
-    if (multi) h += `<td class="val ${cls}">${fmt(tot,isSalt)}<span class="u"> g</span></td>`;
+    if (multi) h += `<td class="val ${cls}">${fmt(tot, isSalt)}<span class="u"> g</span></td>`;
     return h + '</tr>';
   };
-  const div = () => `<tr class="divrow">${cols(ncols)}</tr>`;
+  const divider = () => `<tr class="divrow">${'<td></td>'.repeat(ncols)}</tr>`;
+  const notes = [];   // shown under the table so they wrap on phones
+  const note = (text, warn) => { notes.push(`<p${warn ? ' class="warn"' : ''}>${text}</p>`); return ''; };
 
-  let h = '<table class="out-table"><thead><tr><th class="th-lbl">Ingredient</th>';
-  bdata.forEach(b => {
-    const unit = isBag ? (b.loaves>1?'baguettes':'baguette') : (b.loaves>1?'loaves':'loaf');
-    const sub  = b.oneBowl
-      ? `${b.loaves} ${unit} · ${isBag?'one batch':'one bowl'}`
-      : `${b.loaves} ${unit} · quantities for one ${isBag?'baguette':'loaf'}`;
-    const levainNote = (b.levainPct !== undefined && Math.round(b.levainPct*100) !== Math.round(levainPct*100))
-      ? ` · ${Math.round(b.levainPct*100)}% levain` : '';
-    h += `<th>${b.name?esc(b.name):'Quantities'}<span class="sub-hdr">${sub}${levainNote}</span></th>`;
+  let h = '<div class="out-table-wrap"><table class="out-table"><thead><tr><th class="th-lbl">Ingredient</th>';
+  bowls.forEach(b => {
+    const unit = b.loaves === 1 ? T.one : T.many;
+    let sub = b.oneBowl ? `${b.loaves} ${unit} · one bowl` : `${b.loaves} ${unit} · quantities for one ${T.one}`;
+    if (b.tray) sub += ` · ${esc(b.tray.label)}`;
+    if (Math.round(b.levainPct * 100) !== Math.round(r.levainPct * 100)) sub += ` · ${Math.round(b.levainPct * 100)}% levain`;
+    h += `<th>${esc(b.name)}<span class="sub-hdr">${sub}</span></th>`;
   });
   if (multi) h += '<th>All bowls<span class="sub-hdr">full bake</span></th>';
   h += '</tr></thead><tbody>';
 
-  // Mixing order: levain → water → salt → flour
+  // Mixing order: levain → water → salt → (oil) → flour
   h += row('Levain', b => b.result.levain);
   h += row('Water',  b => b.result.water);
-  h += row('Salt',   b => b.result.salt, {isSalt:true});
+  h += row('Salt',   b => b.result.salt, { isSalt: true });
+  if (r.oil > 0) h += row('Olive oil', b => b.result.oil);
   h += row('Flour',  b => b.result.flour);
-
-  // Flour blend breakdown (advanced, only when not 100% white)
-  const split = bdata[0].result.split;
-  if (split && (split.ww > 0 || split.rye > 0 || bdata.some(b => b.result.split && (b.result.split.ww || b.result.split.rye)))) {
+  if (r.blend) {
     [['White', 'white'], ['Whole wheat', 'ww'], ['Rye', 'rye']].forEach(([label, k]) => {
-      if (bdata.some(b => b.result.split[k] !== 0)) h += row(label, b => b.result.split[k], {cls:'sub', dashZero:true});
+      if (bowls.some(b => b.result.split[k] !== 0)) h += row(label, b => b.result.split[k], { cls: 'sub', dashZero: true });
     });
   }
-
   if (allMixins.length) {
-    h += div();
-    allMixins.forEach(m => { h += row(esc(m.label), b => mixG(b, m.key), {cls:'sub', dashZero:true}); });
+    h += divider();
+    allMixins.forEach(m => { h += row(esc(m.label), b => mixG(b, m.key), { cls: 'sub', dashZero: true }); });
   }
+  h += divider();
+  h += row('Total flour (incl. levain)', b => b.result.totalFlour, { cls: 'sub' });
+  h += row('Total dough', b => b.result.totalDough, { cls: 'total-row' });
 
-  h += div();
-  h += row('Total flour (incl. levain)', b => b.result.totalFlour, {cls:'sub'});
-  h += row('Total dough', b => b.result.totalDough, {cls:'total-row'});
-
-  // Notes: division after bulk, and impossible blends
-  bdata.filter(b => b.oneBowl && b.loaves > 1).forEach(b => {
-    const piece = isBag ? 'baguette' : 'piece';
-    h += `<tr class="note-row"><td colspan="${ncols}">${b.name ? esc(b.name)+': d' : 'D'}ivide into ${b.loaves} ${piece}s of approx. ${fmt(b.result.totalDough / b.loaves, false)} g each after bulk fermentation.</td></tr>`;
+  bowls.filter(b => b.oneBowl && b.loaves > 1).forEach(b => {
+    const piece = r.type === 'focaccia' ? 'pieces' : T.many;
+    h += note(`${multi ? esc(b.name) + ': d' : 'D'}ivide into ${b.loaves} ${piece} of approx. ${fmt(b.result.totalDough / b.loaves)} g each after bulk fermentation${r.type === 'focaccia' ? ', one per tray' : ''}.`);
   });
-  if (bdata.some(b => b.result.split && b.result.split.white < 0)) {
-    h += `<tr class="note-row warn"><td colspan="${ncols}">⚠ The levain's flour (assumed white) is more than the white share of this blend. Lower the levain or raise the white percentage.</td></tr>`;
+  if (r.type === 'focaccia') {
+    // One note per tray size: "per tray" when they're all the same
+    const sizes = new Map();
+    bowls.forEach(b => { const k = Math.round(b.tray.area); if (!sizes.has(k)) sizes.set(k, b.tray); });
+    sizes.forEach(t => {
+      const o = Sourdough.trayOil(t.area);
+      h += note(`Tray oil (not in the table): about ${o.text} (${o.ml} ml) per ${sizes.size > 1 ? esc(t.label) : 'tray'} for greasing, plus a drizzle on top before baking.`);
+    });
   }
-
-  h += '</tbody></table>';
-  const wrap = document.createElement('div');
-  wrap.className = 'out-table-wrap';
-  wrap.innerHTML = h;
-  return wrap;
+  if (bowls.some(b => b.result.split && b.result.split.white < 0))
+    h += note('⚠ The levain’s flour (assumed white) is more than the white share of this blend. Lower the levain or raise the white percentage.', true);
+  return h + '</tbody></table></div>' + (notes.length ? `<div class="out-notes">${notes.join('')}</div>` : '');
 }
 
-function cols(n) {
-  let s='';
-  for(let i=0;i<n;i++) s+='<td></td>';
-  return s;
+// ── RECIPES ───────────────────────────────────────────────────────────────
+let pendingDelete = null, pendingNew = false;
+function recipes() { return store.get(KEY.recipes, []).filter(r => r && r.name && r.state); }
+function updateRecipesBtn() {
+  const btn = document.getElementById('recipes-btn');
+  btn.textContent = state.recipeName ? `📁 ${state.recipeName}${state.dirty ? ' •' : ''}` : '📁 Recipes';
+  btn.title = state.recipeName ? (state.dirty ? 'Changed since last saved' : 'Saved') : 'Save and load recipes';
 }
-
-// ── FORMAT ────────────────────────────────────────────────────────────────
-function fmt(g, isSalt) { return Sourdough.fmt(g, isSalt); }
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function recipeSummary(st) {
+  const r = recipeFrom(sanitize(st)), T = TYPES[r.type];
+  const n = r.bowls.reduce((s, b) => s + b.loaves, 0);
+  return `${T.label} · ${n} ${n === 1 ? T.one : T.many}${r.bowls.length > 1 ? ` · ${r.bowls.length} bowls` : ''} · ${Math.round(r.hyd * 100)}% hydration`;
 }
-function rInt(id,def){ const e=document.getElementById(id); return e?Math.max(1,parseInt(e.value)||def):def; }
-function rFlt(id,def){ const e=document.getElementById(id); return e?(parseFloat(e.value)||def):def; }
-
-// ── GUIDE LINK ────────────────────────────────────────────────────────────
-// Sends the whole recipe (all bowls) so the guide can work out every quantity,
-// including one levain build for the full bake.
-function currentRecipe() {
-  if (mode === 'simple') {
-    const lp = STEP_PCT[stepVal];
-    return { type: breadType, hyd: 0.70, salt: 0.02, blend: null,
-      bowls: bowls.map((b, i) => ({
-        name: document.getElementById('bowl-name-'+b.id)?.value.trim() || ('Bowl '+(i+1)),
-        loaves: rInt('bowl-loaves-'+b.id, 1), lwt: rFlt('bowl-weight-'+b.id, getDefaultWeight()),
-        oneBowl: !!document.getElementById('bowl-onebowl-'+b.id)?.checked,
-        levainPct: lp, mixins: getBowlMixins(b.id, b.mixins) })) };
-  }
-  const blend = getBlend();
-  const globalLev = rFlt('a-starter',15)/100;
-  return { type: 'loaf', hyd: rFlt('a-hyd',70)/100, salt: rFlt('a-salt',2)/100,
-    blend: blend.ok && (blend.ww || blend.rye) ? blend : null,
-    bowls: advBowls.map((b, i) => ({
-      name: document.getElementById('ab-name-'+b.id)?.value.trim() || ('Bowl '+(i+1)),
-      loaves: rInt('ab-loaves-'+b.id, 1), lwt: rFlt('ab-weight-'+b.id, 850),
-      oneBowl: !!document.getElementById('ab-onebowl-'+b.id)?.checked,
-      levainPct: getAdvBowlLevain(b.id, globalLev), mixins: getAdvMixins() })) };
+function openRecipes() {
+  pendingDelete = null; pendingNew = false;
+  document.getElementById('rcp-name').value = state.recipeName || '';
+  setMsg('');
+  renderRecipes(true);
+  const dlg = document.getElementById('recipes-dlg');
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
 }
-function updateGuideLink() {
-  const link = document.getElementById('guide-link');
-  if (!link) return;
-  try { link.href = 'guide.html?' + Sourdough.encodeRecipe(currentRecipe()); }
-  catch (e) { link.href = 'guide.html'; }
+function closeRecipes() { const dlg = document.getElementById('recipes-dlg'); if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
+function setMsg(text, kind) { const m = document.getElementById('rcp-msg'); m.textContent = text; m.className = 'msg' + (kind ? ' ' + kind : ''); }
+function renderRecipes(full) {
+  const list = sortedRecipes();
+  const typed = document.getElementById('rcp-name').value.trim().toLowerCase();
+  document.getElementById('rcp-save-btn').textContent = typed && list.some(r => r.name.toLowerCase() === typed) ? 'Replace' : 'Save';
+  if (full === false) return;
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  document.getElementById('rcp-list').innerHTML = list.length ? list.map((r, i) => `
+    <div class="rcp-item">
+      <div>
+        <div class="rcp-name">${esc(r.name)}${r.name === state.recipeName ? '<small>current</small>' : ''}</div>
+        <div class="rcp-sum">${esc(recipeSummary(r.state))} · ${when(r.savedAt)}</div>
+      </div>
+      <div class="rcp-actions">${pendingDelete === r.name
+        ? `Delete? <button class="btn-ghost danger" onclick="deleteRecipe(${i})">Yes</button><button class="btn-ghost" onclick="pendingDelete=null;renderRecipes()">No</button>`
+        : `<button class="btn-ghost" onclick="loadRecipe(${i})">Load</button><button class="btn-ghost danger" onclick="askDelete(${i})" aria-label="Delete ${esc(r.name)}">Delete</button>`}
+      </div>
+    </div>`).join('') : '<div class="rcp-empty">No saved recipes yet. Name the current settings above and tap Save.</div>';
+  document.getElementById('rcp-new').innerHTML = pendingNew
+    ? `Replace current settings with defaults? <button class="btn-ghost danger" onclick="newRecipe()">Yes</button> <button class="btn-ghost" onclick="pendingNew=false;renderRecipes()">No</button>`
+    : `<button class="btn-ghost" onclick="pendingNew=true;renderRecipes()">Start a new recipe</button>`;
+}
+function askDelete(i) { const r = sortedRecipes()[i]; pendingDelete = r ? r.name : null; renderRecipes(); }
+function sortedRecipes() { return recipes().sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt))); }
+function saveRecipe() {
+  const name = document.getElementById('rcp-name').value.trim();
+  if (!name) { setMsg('Type a name for this recipe first.', 'err'); return; }
+  const snap = JSON.parse(JSON.stringify(state));
+  snap.recipeName = null; snap.dirty = false;
+  const list = recipes().filter(r => r.name.toLowerCase() !== name.toLowerCase());
+  list.push({ name, savedAt: new Date().toISOString(), state: snap });
+  if (!store.set(KEY.recipes, list)) { setMsg('Couldn’t save — this browser is blocking storage (private browsing?).', 'err'); return; }
+  state.recipeName = name; state.dirty = false;
+  saveLast(); updateRecipesBtn();
+  setMsg(`Saved “${name}”.`, 'ok');
+  renderRecipes();
+}
+function loadRecipe(i) {
+  const r = sortedRecipes()[i]; if (!r) return;
+  state = sanitize(r.state);
+  state.recipeName = r.name; state.dirty = false;
+  renderAll(); calc(); saveLast();
+  closeRecipes();
+}
+function deleteRecipe(i) {
+  const r = sortedRecipes()[i]; if (!r) return;
+  store.set(KEY.recipes, recipes().filter(x => x.name !== r.name));
+  if (state.recipeName === r.name) { state.recipeName = null; state.dirty = false; saveLast(); updateRecipesBtn(); }
+  pendingDelete = null; setMsg(`Deleted “${r.name}”.`); renderRecipes();
+}
+function newRecipe() {
+  const keep = { mode: state.mode, type: state.type };
+  state = Object.assign(defaultState(), keep);
+  pendingNew = false;
+  renderAll(); calc(); saveLast();
+  closeRecipes();
 }
 
 // ── THEME ─────────────────────────────────────────────────────────────────
@@ -854,14 +915,15 @@ function applyTheme(t) {
   if (t === 'auto') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = t;
   try { t === 'auto' ? localStorage.removeItem('theme') : localStorage.setItem('theme', t); } catch (e) {}
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = THEME_LABEL[t];
+  document.getElementById('theme-btn').textContent = THEME_LABEL[t];
 }
 function cycleTheme() { applyTheme(THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length]); }
+
+// ── BOOT ──────────────────────────────────────────────────────────────────
 applyTheme(currentTheme());
-
-init();
+state = sanitize(store.get(KEY.last, null));   // bring back the last bake on this device
+renderAll();
+calc();
 </script>
-
 </body>
 </html>
