@@ -43,7 +43,9 @@ GUIDE_READ = """() => {
            shopping: document.getElementById('ing-shopping').textContent,
            banner: document.getElementById('banner').textContent,
            visible: [...document.querySelectorAll('.section[id]')].filter(s => getComputedStyle(s).display !== 'none').map(s => s.id),
-           pickers: document.querySelectorAll('#step2 [data-picker] button').length }; }"""
+           pickers: document.querySelectorAll('#step2 [data-picker] button').length,
+           coil: vis(document.getElementById('coil-fold')), stretch: vis(document.getElementById('stretch-fold')),
+           mixinText: document.getElementById('mixin-text').textContent }; }"""
 
 STEPS = {'loaf': ['step4', 'step5'], 'baguette': ['step4b', 'step5b'], 'focaccia': ['step4f', 'step5f']}
 
@@ -93,12 +95,15 @@ async def main():
                 check(f'{case} tray oil in shopping list', 'Olive oil for the tray' in gd['shopping'] and 'Rice flour' not in gd['shopping'])
 
         # ── Guide opened directly: each tab ──
-        for tab, lev in (('loaf', 83), ('baguette', 70), ('focaccia', 71)):
+        for tab, lev in (('loaf', 83), ('baguette', 70), ('focaccia', 70)):
             await pg.goto(GUIDE)
             await pg.click(f'#tab-{tab}')
             gd = await pg.evaluate(GUIDE_READ)
             check(f'default {tab}: steps', all(s in gd['visible'] for s in STEPS[tab]) and sum(s in gd['visible'] for t in STEPS for s in STEPS[t]) == 2, gd['visible'])
             check(f'default {tab}: levain', n(gd['levain']) == lev, gd['levain'])
+            foc = tab == 'focaccia'
+            check(f'default {tab}: right fold method', gd['coil'] == foc and gd['stretch'] == (not foc), (gd['coil'], gd['stretch']))
+            check(f'default {tab}: mix-in timing names the fold', ('coil fold' if foc else 'stretch and fold') in gd['mixinText'], gd['mixinText'])
         o = await tray_oil(759)
         check('default focaccia tray oil', f"{o['ml']} ml" in gd['trayOil'], gd['trayOil'])
         await pg.goto(GUIDE + '#focaccia')
@@ -134,7 +139,7 @@ async def main():
         for q in ('?r=%7Bnot-json', '?r=' + json.dumps({"t": "focaccia", "b": []})):
             await pg.goto(GUIDE + q)
             gd = await pg.evaluate(GUIDE_READ)
-            check(f'bad link {q[:20]} → default', n(gd['levain']) in (83, 71), gd['levain'])
+            check(f'bad link {q[:20]} → default', n(gd['levain']) in (83, 70), gd['levain'])
 
         await b.close()
     fails.extend(f'JS error: {e}' for e in errs)

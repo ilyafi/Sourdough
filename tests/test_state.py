@@ -113,7 +113,7 @@ async def main():
 
         # ── Advanced: per-type hydration, own levain ──
         await pg.click('#btn-advanced')
-        check('Advanced focaccia defaults to 75% hydration', await pg.text_content('#lbl-h') == '75%')
+        check('Advanced focaccia defaults to 78% hydration', await pg.text_content('#lbl-h') == '78%')
         await pg.click('#btn-type-loaf')
         check('Advanced loaf keeps 70% hydration', await pg.text_content('#lbl-h') == '70%')
         await pg.click('#btn-type-focaccia')

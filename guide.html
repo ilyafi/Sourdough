@@ -220,7 +220,8 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
       <a class="nav-link sub" href="#starter-care">Starter care</a>
       <a class="nav-link" href="#step2">2. Mixing</a>
       <a class="nav-link" href="#step3">3. Bulk fermentation</a>
-      <a class="nav-link sub" href="#stretch-fold">Stretch &amp; fold ▶</a>
+      <a class="nav-link sub" href="#stretch-fold" data-mode="loaf baguette">Stretch &amp; fold ▶</a>
+      <a class="nav-link sub" href="#coil-fold" data-mode="focaccia">Coil folds</a>
     </div>
     <div class="nav-section" data-mode="loaf">
       <div class="nav-section-title">Loaf</div>
@@ -379,6 +380,7 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
         <div class="callout-title">Adding mix-ins</div>
         <p id="mixin-text"></p>
       </div>
+      <div data-mode="loaf baguette">
       <h3 id="stretch-fold">Stretch and fold</h3>
       <a class="video-link" href="https://youtu.be/iFTlXqUSjQE" target="_blank" rel="noopener">▶ Watch: Stretch &amp; fold technique</a>
       <p>Once every 30–45 minutes, for a total of 3 sets:</p>
@@ -388,7 +390,20 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
         <li>Rotate bowl 90° and repeat — 4 folds in total</li>
         <li>Cover the bowl again</li>
       </ol>
-      <p>Timing is flexible. You can refrigerate the bowl for 8–10 hours and take it out ~2 hours before shaping.</p>
+      </div>
+      <div data-mode="focaccia">
+      <h3 id="coil-fold">Coil folds</h3>
+      <p>Focaccia dough is wetter, so instead of stretching it, lift it and let it fold under itself. This is gentler on a slack dough and keeps it off your hands. Once every 30 minutes, for a total of 4 sets:</p>
+      <ol class="step-list">
+        <li>Wet your hands well</li>
+        <li>Slide both hands under the middle of the dough and lift it until both ends come away from the bowl</li>
+        <li>Lower it so the ends tuck underneath the middle</li>
+        <li>Turn the bowl 90° and repeat — 2 coils per set</li>
+        <li>Cover the bowl again</li>
+      </ol>
+      <p>Each set takes under a minute. By the last set the dough should hold a rounded shape, look smoother and show some bubbles.</p>
+      </div>
+      <p>Timing is flexible. You can refrigerate the bowl for 8–10 hours and take it out ~2 hours before <span data-mode="loaf baguette">shaping</span><span data-mode="focaccia">putting it in the tray</span>.</p>
     </section>
 
     <!-- ── STEP 4–5 LOAF ── -->
@@ -483,7 +498,7 @@ h1, h2, h3, .topnav-brand { font-family:'Cormorant Garamond',serif; font-variant
 
     <!-- ── STEP 4–5 FOCACCIA ── -->
     <section class="section" id="step4f" data-mode="focaccia">
-      <div class="section-num">Step 4 · After last stretch and fold</div>
+      <div class="section-num">Step 4 · After the last coil fold</div>
       <h2>Into the tray</h2>
       <p>Leave covered for another 1.5–2 hours. The dough should have risen ~50–75% and look bubbly.</p>
       <p data-divide></p>
@@ -539,6 +554,7 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const UNITS = { loaf: ['loaf', 'loaves'], baguette: ['baguette', 'baguettes'], focaccia: ['tray', 'trays'] };
 function unitWord(type, n) { return plural(n, ...(UNITS[type] || UNITS.loaf)); }
 const pieceWord = type => (UNITS[type] || UNITS.loaf)[0];
+const foldWord = type => type === 'focaccia' ? 'coil fold' : 'stretch and fold';
 function listAnd(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
 
 // ── RENDER ────────────────────────────────────────────────────────────────
@@ -571,7 +587,7 @@ function render() {
     ? (multi ? `Quantities for your ${plan.bowls.length} bowls. You make one levain for the whole bake, then mix each bowl separately.`
              : `Quantities for your recipe — ${unitWord(type, bowl.loaves)}${bowl.tray ? ` (${esc(bowl.tray.label)})` : ''}${bowl.oneBowl || bowl.loaves === 1 ? '' : ', mixed one at a time'}, ${g(bowl.lwt)} of dough each.`)
     : { baguette: 'Default quantities for two plain baguettes (400 g dough each, one bowl).',
-        focaccia: 'Default quantities for one focaccia in a 23 × 33 cm pan (835 g dough, 75% hydration).',
+        focaccia: 'Default quantities for one focaccia in a 23 × 33 cm pan (835 g dough, 78% hydration).',
         loaf: 'Default quantities for one white sourdough loaf (950 g dough; the baked loaf is about 820 g).' }[type];
 
   // Levain build block
@@ -611,7 +627,7 @@ function render() {
     [['White bread flour', split.white], ['Whole wheat flour', split.ww], ['Rye flour', split.rye]]
       .filter(x => x[1] > 0).forEach(([n, v]) => { doughRows += `<tr class="sub"><td>${n}</td><td class="amt">${Sourdough.fmt(v)}<small>g</small></td></tr>`; });
   }
-  r.mixins.forEach(m => { doughRows += `<tr><td>${esc(m.name)}<span class="note">Added at the second stretch and fold</span></td><td class="amt">${Sourdough.fmt(m.g)}<small>g</small></td></tr>`; });
+  r.mixins.forEach(m => { doughRows += `<tr><td>${esc(m.name)}<span class="note">Added at the second ${foldWord(type)}</span></td><td class="amt">${Sourdough.fmt(m.g)}<small>g</small></td></tr>`; });
   doughRows += `<tr class="total"><td>Total dough</td><td class="amt">${Sourdough.fmt(r.totalDough)}<small>g</small></td></tr>`;
   const doughTitle = perPiece ? `Dough — ${esc(bowl.name)}, for each ${pieceWord(type)}`
                               : `Dough — ${mine ? esc(bowl.name) : 'Step 2'}`;
@@ -674,8 +690,8 @@ function render() {
 
   // Step 3: mix-ins
   document.getElementById('mixin-text').innerHTML = r.mixins.length
-    ? `Add ${listAnd(r.mixins.map(m => `<span class="q">${g(m.g)}</span> ${esc(m.name)}`))} during the second stretch and fold.`
-    : 'If adding olives, toasted walnuts or other mix-ins (around 15% of the flour), incorporate them during the second stretch and fold. This works for loaves, baguettes and focaccia.';
+    ? `Add ${listAnd(r.mixins.map(m => `<span class="q">${g(m.g)}</span> ${esc(m.name)}`))} during the second ${foldWord(type)}.`
+    : `If adding olives, toasted walnuts or other mix-ins (around 15% of the flour), incorporate them during the second ${foldWord(type)}.`;
 
   // Step 4: dividing
   const divideText = (bowl.oneBowl && bowl.loaves > 1)

@@ -28,7 +28,7 @@ READ_TABLE = """() => {
 TRAYS = {'p-20x20': 400, 'p-23x33': 759, 'p-28x38': 1064, 'p-33x46': 1518,
          'p-r24': math.pi * 144, 'p-r28': math.pi * 196}
 THICK = {'thin': 0.8, 'medium': 1.1, 'thick': 1.4}
-SIMPLE_HYD = {'loaf': 0.70, 'baguette': 0.70, 'focaccia': 0.75}
+SIMPLE_HYD = {'loaf': 0.70, 'baguette': 0.70, 'focaccia': 0.78}
 
 def num(v):
     v = v.replace(',', '').replace(' ', '').replace(' ', '')

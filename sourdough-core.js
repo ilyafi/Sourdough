@@ -122,7 +122,7 @@
     if (type === 'baguette')
       return { type, hyd: 0.70, salt: 0.02, oil: 0, blend: null, bowls: [{ name: 'Baguettes', loaves: 2, lwt: 400, oneBowl: true, levainPct: 0.15, mixins: [] }] };
     if (type === 'focaccia')
-      return { type, hyd: 0.75, salt: 0.02, oil: 0, blend: null, bowls: [{ name: 'Focaccia', loaves: 1, lwt: Math.round(23 * 33 * 1.1), oneBowl: true,
+      return { type, hyd: 0.78, salt: 0.02, oil: 0, blend: null, bowls: [{ name: 'Focaccia', loaves: 1, lwt: Math.round(23 * 33 * 1.1), oneBowl: true,
                levainPct: 0.15, mixins: [], tray: { label: 'Rectangular pan 23 × 33 cm', area: 23 * 33 } }] };
     return { type: 'loaf', hyd: 0.70, salt: 0.02, oil: 0, blend: null, bowls: [{ name: 'Loaf', loaves: 1, lwt: 950, oneBowl: true, levainPct: 0.15, mixins: [] }] };
   }

@@ -389,7 +389,7 @@ try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') 
 const TYPES = {
   loaf:     { label: 'Loaf',     one: 'loaf',     many: 'loaves',    weight: 950, count: 2, simpleHyd: 70, icon: '🍞' },
   baguette: { label: 'Baguette', one: 'baguette', many: 'baguettes', weight: 400, count: 2, simpleHyd: 70, icon: '🥖' },
-  focaccia: { label: 'Focaccia', one: 'tray',     many: 'trays',     weight: 835, count: 1, simpleHyd: 75, icon: '🫓' },
+  focaccia: { label: 'Focaccia', one: 'tray',     many: 'trays',     weight: 835, count: 1, simpleHyd: 78, icon: '🫓' },
 };
 const SPEEDS = [
   { pct: 20, desc: 'Faster rise · good for same-day baking' },
@@ -439,7 +439,7 @@ function newBowl(i) {
 function defaultState() {
   return {
     v: 1, mode: 'simple', type: 'loaf', speed: 1,
-    adv: { hyd: { loaf: '70', baguette: '70', focaccia: '75' }, salt: '2', levain: '15', blend: { w: '100', ww: '0', rye: '0' } },
+    adv: { hyd: { loaf: '70', baguette: '70', focaccia: '78' }, salt: '2', levain: '15', blend: { w: '100', ww: '0', rye: '0' } },
     oil: { on: false, pct: '4' },
     bowls: [newBowl(0)],
     recipeName: null, dirty: false,
