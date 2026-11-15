@@ -239,6 +239,13 @@ dialog#recipes-dlg::backdrop{background:rgba(20,14,8,.45)}
 .rcp-empty{padding:14px 0;color:var(--text-3);font-size:14px}
 .rcp-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:16px}
 .rcp-foot .hint{margin:0}
+.rcp-move{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.rcp-move .hint{margin:2px 0 0}
+.rcp-move-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rcp-incoming{background:var(--accent-soft);border:1px solid var(--border-strong);border-radius:10px;padding:12px 14px;margin-bottom:16px}
+.rcp-incoming .rcp-actions{margin-top:10px;flex-wrap:wrap}
+.linkbox{margin-top:6px}
+.linkbox input{width:100%;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;font:400 13px 'DM Mono',monospace;color:var(--text)}
 @media(max-width:520px){ .toolbar-right{flex-wrap:wrap} .rcp-item{flex-wrap:wrap} }
 </style>
 
@@ -361,6 +368,7 @@ try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') 
     <button class="dlg-x" onclick="closeRecipes()" aria-label="Close">×</button>
   </div>
   <div class="dlg-body">
+    <div id="rcp-incoming"></div>
     <div class="lbl">Save the current settings as</div>
     <div class="rcp-save">
       <input type="text" id="rcp-name" placeholder="e.g. Walnut baguettes" maxlength="60" oninput="renderRecipes(false)"
@@ -368,10 +376,21 @@ try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') 
       <button class="btn-ghost primary" id="rcp-save-btn" onclick="saveRecipe()">Save</button>
     </div>
     <div class="msg" id="rcp-msg"></div>
+    <div class="linkbox" id="rcp-linkbox" hidden><input type="text" readonly id="rcp-linkbox-input" aria-label="Recipe link" onfocus="this.select()"></div>
     <div class="rcp-list" id="rcp-list"></div>
     <div class="rcp-foot">
-      <div class="hint">Saved in this browser on this device only.</div>
+      <div class="hint">Saved in this browser on this device.</div>
       <span id="rcp-new"></span>
+    </div>
+    <div class="rcp-move">
+      <div class="lbl">Move to another device</div>
+      <div class="hint">Export saves all your recipes and trays to a file. Import that file on another phone or computer.</div>
+      <div class="rcp-move-btns">
+        <button class="btn-ghost" id="export-btn" onclick="exportRecipes()">⬇ Export</button>
+        <button class="btn-ghost" id="share-file-btn" onclick="shareRecipesFile()" hidden>Share file…</button>
+        <button class="btn-ghost" id="import-btn" onclick="document.getElementById('import-file').click()">⬆ Import</button>
+        <input type="file" id="import-file" accept=".json,application/json" hidden onchange="importRecipesFile(this)">
+      </div>
     </div>
   </div>
 </dialog>
@@ -844,6 +863,9 @@ function openRecipes() {
   pendingDelete = null; pendingNew = false;
   document.getElementById('rcp-name').value = state.recipeName || '';
   setMsg('');
+  document.getElementById('rcp-linkbox').hidden = true;
+  document.getElementById('share-file-btn').hidden = !canShareFiles();
+  renderIncoming();
   renderRecipes(true);
   const dlg = document.getElementById('recipes-dlg');
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
@@ -864,7 +886,7 @@ function renderRecipes(full) {
       </div>
       <div class="rcp-actions">${pendingDelete === r.name
         ? `Delete? <button class="btn-ghost danger" onclick="deleteRecipe(${i})">Yes</button><button class="btn-ghost" onclick="pendingDelete=null;renderRecipes()">No</button>`
-        : `<button class="btn-ghost" onclick="loadRecipe(${i})">Load</button><button class="btn-ghost danger" onclick="askDelete(${i})" aria-label="Delete ${esc(r.name)}">Delete</button>`}
+        : `<button class="btn-ghost" onclick="loadRecipe(${i})">Load</button><button class="btn-ghost" onclick="shareRecipeLink(${i})" title="Send a link to this recipe" aria-label="Link to ${esc(r.name)}">Link</button><button class="btn-ghost danger" onclick="askDelete(${i})" aria-label="Delete ${esc(r.name)}">Delete</button>`}
       </div>
     </div>`).join('') : '<div class="rcp-empty">No saved recipes yet. Name the current settings above and tap Save.</div>';
   document.getElementById('rcp-new').innerHTML = pendingNew
@@ -907,6 +929,185 @@ function newRecipe() {
   closeRecipes();
 }
 
+// ── EXPORT / IMPORT (move recipes between devices as a file) ─────────────
+const FILE_KIND = 'ilyabread-recipes';
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function exportFile() {
+  const data = { kind: FILE_KIND, version: 1, exportedAt: new Date().toISOString(), recipes: recipes(), trays: savedTrays() };
+  const d = new Date(), pad = n => String(n).padStart(2, '0');
+  const name = `sourdough-recipes-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  return { data, name, blob: new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }) };
+}
+function exportSummary(data) {
+  return [data.recipes.length ? plural(data.recipes.length, 'recipe', 'recipes') : '', data.trays.length ? plural(data.trays.length, 'tray', 'trays') : ''].filter(Boolean).join(' and ');
+}
+function exportRecipes() {
+  const f = exportFile();
+  if (!f.data.recipes.length && !f.data.trays.length) { setMsg('Nothing to export yet — save a recipe or a tray first.', 'err'); return; }
+  const url = URL.createObjectURL(f.blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  setMsg(`Exported ${exportSummary(f.data)} to ${f.name}.`, 'ok');
+}
+function canShareFiles() {
+  try { return !!(navigator.canShare && navigator.canShare({ files: [new File(['{}'], 'x.json', { type: 'application/json' })] })); }
+  catch (e) { return false; }
+}
+async function shareRecipesFile() {
+  const f = exportFile();
+  if (!f.data.recipes.length && !f.data.trays.length) { setMsg('Nothing to share yet — save a recipe or a tray first.', 'err'); return; }
+  try {
+    await navigator.share({ files: [new File([f.blob], f.name, { type: 'application/json' })], title: 'Sourdough recipes' });
+    setMsg(`Shared ${exportSummary(f.data)}.`, 'ok');
+  } catch (e) {
+    if (e && e.name !== 'AbortError') setMsg('Sharing didn’t work here — use Export instead.', 'err');
+  }
+}
+async function importRecipesFile(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  if (file.size > 2e6) { setMsg('That file is too big to be a recipes export.', 'err'); return; }
+  let data;
+  try { data = JSON.parse(await file.text()); }
+  catch (e) { setMsg('That file isn’t a recipes export from this calculator.', 'err'); return; }
+  const res = importData(data);
+  if (res.error) { setMsg(res.error, 'err'); return; }
+  setMsg(res.summary, 'ok');
+  renderRecipes();
+  if (state.type === 'focaccia') renderBowls();   // new trays appear in the tray lists
+}
+// Merge an export into this device. New recipes are added; for a name that
+// already exists, the more recently saved version wins. Trays match by name.
+function importData(data) {
+  if (!data || data.kind !== FILE_KIND || !Array.isArray(data.recipes))
+    return { error: 'That file isn’t a recipes export from this calculator.' };
+  const trays = savedTrays(), idMap = {};
+  let traysAdded = 0;
+  (Array.isArray(data.trays) ? data.trays : []).forEach(t => {
+    if (!t || typeof t.name !== 'string' || !t.name.trim()) return;
+    const tray = { id: '', name: t.name.trim().slice(0, 40), shape: t.shape === 'round' ? 'round' : 'rect' };
+    if (tray.shape === 'round') tray.d = str(t.d, '24'); else { tray.w = str(t.w, '23'); tray.l = str(t.l, '33'); }
+    const same = trays.find(x => x.name.toLowerCase() === tray.name.toLowerCase());
+    if (same) { idMap[t.id] = same.id; return; }
+    tray.id = (typeof t.id === 'string' && /^u[a-z0-9]+$/.test(t.id) && !trays.some(x => x.id === t.id))
+      ? t.id : 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    idMap[t.id] = tray.id; trays.push(tray); traysAdded++;
+  });
+  const list = recipes();
+  let added = 0, updated = 0, kept = 0;
+  data.recipes.forEach(r => {
+    if (!r || typeof r.name !== 'string' || !r.name.trim() || !r.state || typeof r.state !== 'object') return;
+    const st = JSON.parse(JSON.stringify(r.state));
+    if (Array.isArray(st.bowls)) st.bowls.forEach(b => { if (b && b.tray && idMap[b.tray.sel]) b.tray.sel = idMap[b.tray.sel]; });
+    const name = r.name.trim().slice(0, 60);
+    const when = new Date(r.savedAt), savedAt = isNaN(when) ? new Date(0).toISOString() : when.toISOString();
+    const i = list.findIndex(x => x.name.toLowerCase() === name.toLowerCase());
+    if (i < 0) { list.push({ name, savedAt, state: st }); added++; }
+    else if (new Date(savedAt) > new Date(list[i].savedAt || 0)) { list[i] = { name: list[i].name, savedAt, state: st }; updated++; }
+    else kept++;
+  });
+  if (!added && !updated && !kept && !traysAdded) return { error: 'No recipes or trays found in that file.' };
+  if (!store.set(KEY.trays, trays) || !store.set(KEY.recipes, list))
+    return { error: 'Couldn’t save — this browser is blocking storage (private browsing?).' };
+  if (!added && !updated && !traysAdded) return { summary: 'Nothing new — you already have everything in that file.' };
+  const parts = [];
+  if (added)      parts.push(`${plural(added, 'new recipe', 'new recipes')}`);
+  if (updated)    parts.push(`${plural(updated, 'recipe', 'recipes')} updated to a newer version`);
+  if (kept)       parts.push(`${plural(kept, 'recipe', 'recipes')} kept (yours was newer or the same)`);
+  if (traysAdded) parts.push(`${plural(traysAdded, 'new tray', 'new trays')}`);
+  return { summary: 'Imported: ' + parts.join(', ') + '.' };
+}
+
+// ── SHARE LINKS (one recipe in a URL) ───────────────────────────────────
+function b64urlEncode(text) {
+  let bin = ''; new TextEncoder().encode(text).forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlDecode(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
+}
+const pageUrl = () => location.href.split('#')[0].split('?')[0];
+function recipeLink(r) {
+  const st = JSON.parse(JSON.stringify(r.state));
+  delete st.recipeName; delete st.dirty;
+  (st.bowls || []).forEach(b => { delete b.id; (b.mixins || []).forEach(m => delete m.id); });
+  return pageUrl() + '#recipe=' + b64urlEncode(JSON.stringify({ k: 'r1', n: r.name, t: r.savedAt, s: st }));
+}
+async function shareRecipeLink(i) {
+  const r = sortedRecipes()[i]; if (!r) return;
+  const url = recipeLink(r);
+  document.getElementById('rcp-linkbox').hidden = true;
+  // Phones: open the share sheet (Messages, WhatsApp, email…)
+  if (navigator.share && window.matchMedia && matchMedia('(pointer: coarse)').matches) {
+    try { await navigator.share({ title: r.name, text: `Sourdough recipe: ${r.name}`, url }); setMsg(`Shared “${r.name}”.`, 'ok'); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); setMsg(`Link to “${r.name}” copied — paste it into a message or email.`, 'ok'); }
+  catch (e) {
+    setMsg(`Copy this link to share “${r.name}”:`, 'ok');
+    const box = document.getElementById('rcp-linkbox'), inp = document.getElementById('rcp-linkbox-input');
+    box.hidden = false; inp.value = url; inp.focus(); inp.select();
+  }
+}
+
+// Opening a shared link: offer to open and save the recipe
+let incoming = null;
+function readIncoming() {
+  const h = location.hash;
+  if (!h.startsWith('#recipe=')) return false;
+  history.replaceState(null, '', location.href.split('#')[0]);
+  try {
+    const p = JSON.parse(b64urlDecode(h.slice(8)));
+    if (!p || p.k !== 'r1' || typeof p.n !== 'string' || !p.s || typeof p.s !== 'object') throw new Error('bad');
+    const when = new Date(p.t);
+    incoming = { name: p.n.trim().slice(0, 60) || 'Shared recipe', savedAt: isNaN(when) ? new Date().toISOString() : when.toISOString(), state: p.s };
+  } catch (e) { incoming = { error: true }; }
+  openRecipes();
+  return true;
+}
+function renderIncoming() {
+  const el = document.getElementById('rcp-incoming');
+  if (!incoming) { el.innerHTML = ''; return; }
+  el.innerHTML = incoming.error
+    ? `<div class="rcp-incoming"><strong>This recipe link is damaged or incomplete.</strong> Ask for it to be sent again.
+         <div class="rcp-actions"><button class="btn-ghost" onclick="dismissIncoming()">OK</button></div></div>`
+    : `<div class="rcp-incoming">A recipe was shared with you: <strong>${esc(incoming.name)}</strong>
+         <div class="rcp-sum">${esc(recipeSummary(incoming.state))}</div>
+         <div class="rcp-actions"><button class="btn-ghost primary" onclick="acceptIncoming()">Open and save it</button>
+         <button class="btn-ghost" onclick="dismissIncoming()">Not now</button></div></div>`;
+}
+function dismissIncoming() { incoming = null; renderIncoming(); }
+function acceptIncoming() {
+  const inc = incoming; if (!inc || inc.error) return;
+  const list = recipes();
+  const sameState = r => JSON.stringify(sanitizeForCompare(r.state)) === JSON.stringify(sanitizeForCompare(inc.state));
+  let name = inc.name;
+  const existing = list.find(r => r.name.toLowerCase() === name.toLowerCase());
+  if (!existing || !sameState(existing)) {
+    // Never overwrite one of your own recipes: add a number if the name is taken
+    for (let n = 2; list.some(r => r.name.toLowerCase() === name.toLowerCase()); n++) name = `${inc.name} (${n})`;
+    list.push({ name, savedAt: inc.savedAt, state: inc.state });
+    if (!store.set(KEY.recipes, list)) {
+      // Storage blocked: still open it, just not saved
+      state = sanitize(inc.state); state.recipeName = null; state.dirty = false;
+      incoming = null; renderAll(); calc(); closeRecipes(); return;
+    }
+  } else name = existing.name;
+  incoming = null;
+  state = sanitize(inc.state); state.recipeName = name; state.dirty = false;
+  renderAll(); calc(); saveLast();
+  closeRecipes();
+}
+// Compare recipes ignoring internal ids
+function sanitizeForCompare(st) {
+  const s = sanitize(st); s.recipeName = null; s.dirty = false;
+  s.bowls.forEach(b => { b.id = 0; b.mixins.forEach(m => m.id = 0); });
+  return s;
+}
+
 // ── THEME ─────────────────────────────────────────────────────────────────
 const THEMES = ['auto', 'light', 'dark'];
 const THEME_LABEL = { auto: 'Theme: Auto', light: 'Theme: Light', dark: 'Theme: Dark' };
@@ -924,6 +1125,8 @@ applyTheme(currentTheme());
 state = sanitize(store.get(KEY.last, null));   // bring back the last bake on this device
 renderAll();
 calc();
+readIncoming();                                 // a shared recipe link opens the Recipes dialog
+window.addEventListener('hashchange', readIncoming);
 </script>
 </body>
 </html>
